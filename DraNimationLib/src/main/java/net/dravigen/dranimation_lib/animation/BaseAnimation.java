@@ -4,6 +4,7 @@ import btw.world.util.difficulty.DifficultyParam;
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.minecraft.src.*;
 
+@SuppressWarnings("unused")
 public abstract class BaseAnimation {
 	
 	public final float speedModifier;
@@ -109,6 +110,11 @@ public abstract class BaseAnimation {
 		return this.maxCooldown != 0;
 	}
 	
+	public void startCooldown(ICustomMovementEntity customPlayer) {
+		customPlayer.lmm_$setCooldown(this.maxCooldown, id);
+		customPlayer.lmm_$setTimeRendered(this.totalDuration);
+	}
+	
 	public void updateAnimationTime(ResourceLocation currentAnimation, EntityLivingBase player) {
 		ICustomMovementEntity customPlayer = (ICustomMovementEntity) player;
 
@@ -116,6 +122,9 @@ public abstract class BaseAnimation {
 			if (this.hasCooldown()) {
 				if (customPlayer.lmm_$getTimeRendered() < this.totalDuration) {
 					customPlayer.lmm_$setTimeRendered(customPlayer.lmm_$getTimeRendered() + 1);
+				}
+				else {
+					customPlayer.lmm_$setCooldown(this.maxCooldown, this.id);
 				}
 			}
 			else {

@@ -6,6 +6,7 @@ import net.minecraft.src.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class AnimationUtils {
 	private static final Map<ResourceLocation, BaseAnimation> animationsMap = new HashMap<>();
 	public static float delta = 1;

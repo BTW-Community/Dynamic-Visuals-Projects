@@ -2,6 +2,7 @@ package net.dravigen.let_me_move_ex.animation.player.actions;
 
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
+import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
 import net.dravigen.let_me_move.animation.player.poses.AnimCommon;
 import net.minecraft.src.*;
@@ -53,18 +54,18 @@ public class AnimDashing extends AnimCommon {
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
 		//partHolder.resetAnimationRotationPoints();
 		
-		float side = customEntity.lmm_$getSideValue();
-		
 		i = clampedI(i);
+		System.out.println(customEntity.lmm_$getTimeRendered());
+		float straf = -GeneralUtils.getMovementComponents(entity)[1];
 		
-		entity.renderYawOffset = entity.rotationYawHead + 45 * side;
+		entity.renderYawOffset = entity.rotationYawHead + 45 * straf;
 		
 		float[] body = new float[]{0, 0, 0, 0, 12, 0};
 		float[] head = new float[]{j * (pi / 180.0f), i * (pi / 180.0f), 0, 0, 0, 0};
-		float[] rArm = new float[]{pi * 0.5f, side, side * pi * 0.25f, -5, 2, 0};
-		float[] lArm = new float[]{pi * 0.5f, side, side * pi * 0.25f, 5, 2, 0};
-		float[] rLeg = new float[]{pi * 0.25f, 0, side * -pi * 0.125f, -1.9f, 12, 0.1f};
-		float[] lLeg = new float[]{pi * 0.25f, 0, side * -pi * 0.125f, 1.9f, 12, 0.1f};
+		float[] rArm = new float[]{pi * 0.5f, straf, straf * pi * 0.25f, -5, 2, 0};
+		float[] lArm = new float[]{pi * 0.5f, straf, straf * pi * 0.25f, 5, 2, 0};
+		float[] rLeg = new float[]{pi * 0.25f, 0, straf * -pi * 0.125f, -1.9f, 12, 0.1f};
+		float[] lLeg = new float[]{pi * 0.25f, 0, straf * -pi * 0.125f, 1.9f, 12, 0.1f};
 		
 		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.3f * delta, 0.7f * delta);
 		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.8f * delta, 0.7f * delta);
@@ -91,10 +92,6 @@ public class AnimDashing extends AnimCommon {
 	@Override
 	public boolean getCustomMove(EntityPlayer player) {
 		if (((ICustomMovementEntity)player).lmm_$getTimeRendered() == 0) {
-			movedOnce = false;
-		}
-		
-		if (!movedOnce) {
 			float var1 = player.moveStrafing * 8;
 			float var4 = var1 * var1;
 			
@@ -116,8 +113,6 @@ public class AnimDashing extends AnimCommon {
 			player.moveEntity(player.motionX, player.motionY, player.motionZ);
 			
 			player.motionY *= 0.8f;
-			
-			movedOnce = true;
 			
 			return true;
 		}

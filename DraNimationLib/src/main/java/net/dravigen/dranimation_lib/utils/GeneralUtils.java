@@ -4,6 +4,7 @@ import net.minecraft.src.*;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class GeneralUtils {
 	public static final float pi = (float) Math.PI;
 	
@@ -207,7 +208,7 @@ public class GeneralUtils {
 		if (!wall.isEmpty()) {
 			AxisAlignedBB top = wall.get(wall.size() - 1);
 			
-			if (getBlockBoundCentered(entity.worldObj, entity, x, top.maxY, z, 1.4) == null) {
+			if (getBlockBoundCentered(entity.worldObj, entity, x, top.maxY, z, 0.5) == null) {
 				
 				return top.maxY;
 			}

@@ -50,7 +50,7 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer {
 		
 		if (!customPlayer.lmm_$getAnimation().hasCooldown() ||
 				customPlayer.lmm_$getAnimation().hasCooldown() &&
-						customPlayer.lmm_$getTimeRendered() >= customPlayer.lmm_$getAnimation().totalDuration) {
+						customPlayer.lmm_$getCooldown(customPlayer.lmm_$getAnimationID()) > 0) {
 			for (BaseAnimation animationb : AnimationUtils.getAnimationsMap().values()) {
 				if (!animationb.shouldActivateAnimation(this, this.boundingBox)) continue;
 				if (animationb.isGeneralConditonsMet(this, this.boundingBox)) {

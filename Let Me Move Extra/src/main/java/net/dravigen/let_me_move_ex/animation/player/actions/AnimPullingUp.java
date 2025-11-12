@@ -14,7 +14,7 @@ public class AnimPullingUp extends AnimCommon {
 	private coords prevSide;
 	
 	public AnimPullingUp() {
-		super(id, 1.4f, 1f, false, 0, 40, false);
+		super(id, 1.4f, 1f, false, 20, 40, false);
 	}
 	
 	@Override
@@ -121,8 +121,9 @@ public class AnimPullingUp extends AnimCommon {
 	
 	@Override
 	public void updateAnimationTime(ResourceLocation currentAnimation, EntityLivingBase player) {
+		ICustomMovementEntity customPlayer = (ICustomMovementEntity) player;
+		
 		if (currentAnimation.equals(this.getID())) {
-			ICustomMovementEntity customPlayer = (ICustomMovementEntity) player;
 			customPlayer.lmm_$setTimeRendered(MathHelper.floor_double((2 -
 					((yBlockAboveWall + 0.1) - player.boundingBox.minY)) * this.totalDuration / 2));
 			
@@ -134,8 +135,14 @@ public class AnimPullingUp extends AnimCommon {
 					!player.isSneaking() ||
 					timeRendered < 35 &&
 							(getWallSide(player, 0, player.height) == null || getWallTopYIfEmptySpace(player) == -1)) {
-				customPlayer.lmm_$setTimeRendered(this.totalDuration);
+				this.startCooldown(customPlayer);
 			}
+		}
+		
+		int cooldown = customPlayer.lmm_$getCooldown(id);
+		
+		if (cooldown > 0) {
+			customPlayer.lmm_$setCooldown(cooldown - 1, id);
 		}
 	}
 	
@@ -169,7 +176,7 @@ public class AnimPullingUp extends AnimCommon {
 				x = prevSide == coords.EAST ? 10 : prevSide == coords.WEST ? -10 : x;
 				z = prevSide == coords.SOUTH ? 10 : prevSide == coords.NORTH ? -10 : z;
 				
-				customPlayer.lmm_$setTimeRendered(this.totalDuration);
+				this.startCooldown(customPlayer);
 				
 				movedOnce = true;
 			}
@@ -190,11 +197,6 @@ public class AnimPullingUp extends AnimCommon {
 	
 	@Override
 	public boolean customBodyHeadRotation(EntityLivingBase entity) {
-		return true;
-	}
-	
-	@Override
-	public boolean hasCooldown() {
 		return true;
 	}
 }

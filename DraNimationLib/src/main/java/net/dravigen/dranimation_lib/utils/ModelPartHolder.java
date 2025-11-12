@@ -1,5 +1,6 @@
 package net.dravigen.dranimation_lib.utils;
 
+@SuppressWarnings("unused")
 public class ModelPartHolder {
 	float[] head = new float[]{0, 0, 0, 0, 0, 0};
 	float[] body = new float[]{0, 0, 0, 0, 12, 0};

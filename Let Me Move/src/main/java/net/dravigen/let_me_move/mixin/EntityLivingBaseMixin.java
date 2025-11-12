@@ -106,9 +106,9 @@ public abstract class EntityLivingBaseMixin extends Entity implements ICustomMov
 				PacketUtils.animationCtoSSync(ID);
 			}
 			
-			if (!ID.equals(this.currentAnimation)) {
+			/*if (!ID.equals(this.currentAnimation)) {
 				this.animationCooldowns.put(this.currentAnimation, this.lmm_$getAnimation().maxCooldown);
-			}
+			}*/
 			
 			this.currentAnimation = ID;
 			
