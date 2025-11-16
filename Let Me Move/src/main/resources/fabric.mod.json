@@ -3,13 +3,13 @@
   "id": "let_me_move",
   "version": "${version}",
   "name": "Let Me Move !",
-  "description": "A movement overhaul addon",
+  "description": "An animation overhaul addon",
   "authors": [
     "DraViGen"
   ],
   "contact": {
     "homepage": "https://github.com/DraViGen",
-    "sources": "https://github.com/BTW-Community/Let-Me-Move"
+    "sources": "https://github.com/BTW-Community/Dynamic-Visuals-Projects"
   },
   "license": "CC-BY-4.0",
   "icon": "assets/let_me_move/icon.png",

@@ -9,18 +9,11 @@ import net.dravigen.let_me_move.animation.player.poses.AnimCommon;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.roll_key;
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 
-public class AnimRolling extends AnimCommon {
+public class AnimRolling extends AnimBaseAction {
 	public static final ResourceLocation id = new ResourceLocation("LMM", "rolling");
 	
 	public AnimRolling() {
 		super(id, 0.8f, 1, true, 60, 25, true);
-	}
-	
-	@Override
-	public boolean shouldActivateAnimation(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
-		if (!AnimationUtils.extraIsPresent) return false;
-		
-		return super.shouldActivateAnimation(player, axisAlignedBB);
 	}
 	
 	@Override

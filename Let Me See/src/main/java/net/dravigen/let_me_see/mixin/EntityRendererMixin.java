@@ -24,7 +24,7 @@ public abstract class EntityRendererMixin {
 	@Unique
 	float prevYaw = 0;
 	
-	@Redirect(method = "setupViewBobbing", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glRotatef(FFFF)V", ordinal = 0), remap = false)
+	@Redirect(method = "setupViewBobbing", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glRotatef(FFFF)V", ordinal = 0))
 	private void customBobbingRoll(float angle, float x, float y, float z) {
 		if (mc.gameSettings.thirdPersonView == 0) {
 			
@@ -45,7 +45,7 @@ public abstract class EntityRendererMixin {
 		}
 	}
 	
-	@Redirect(method = "setupViewBobbing", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glRotatef(FFFF)V", ordinal = 1), remap = false)
+	@Redirect(method = "setupViewBobbing", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glRotatef(FFFF)V", ordinal = 1))
 	private void customBobbingPitch(float angle, float x, float y, float z) {
 		if (mc.gameSettings.thirdPersonView == 0) {
 			

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.*;
 public abstract class NetServerHandlerMixin extends NetHandler {
 	
 	@Redirect(method = "handleFlying", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/EntityPlayerMP;addExhaustionForJump()V"))
-	private void a(EntityPlayerMP instance) {
+	private void preventUnwantedJumpExhaustion(EntityPlayerMP instance) {
 		if (!((ICustomMovementEntity) instance).lmm_$isAnimation(AnimSwimming.id)) {
 			instance.addExhaustionForJump();
 		}

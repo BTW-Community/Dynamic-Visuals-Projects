@@ -257,7 +257,7 @@ public class AnimCommon extends BaseAnimation {
 				lLeg[1] -= 0.31415927f;
 			}
 		}
-		else {
+		else if (!player.isPlayerSleeping()){
 			if (isFlying) {
 				backward = forw < 0;
 				

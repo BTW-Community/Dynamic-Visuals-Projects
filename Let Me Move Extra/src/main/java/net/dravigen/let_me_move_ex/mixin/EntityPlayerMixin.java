@@ -16,9 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EntityPlayer.class)
 public abstract class EntityPlayerMixin extends EntityLivingBase {
 	
-	@Shadow
-	protected boolean sleeping;
-	
 	public EntityPlayerMixin(World par1World) {
 		super(par1World);
 	}
@@ -38,8 +35,6 @@ public abstract class EntityPlayerMixin extends EntityLivingBase {
 	@Inject(method = "onUpdate", at = @At("HEAD"))
 	private void updateAnimation(CallbackInfo ci) {
 		if (!AnimationUtils.extraIsPresent) return;
-		
-		if (this.sleeping) return;
 		
 		this.setSize(0.6f, ((ICustomMovementEntity) this).lmm_$getAnimation().height);
 	}

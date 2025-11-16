@@ -9,19 +9,12 @@ import net.minecraft.src.*;
 
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 
-public class AnimDashing extends AnimCommon {
+public class AnimDashing extends AnimBaseAction {
 	public static final ResourceLocation id = new ResourceLocation("LMM", "dashing");
 	private static int pressTime = 0;
 	
 	public AnimDashing() {
 		super(id, 1.8f, 1, false, 60, 5, true, 0);
-	}
-	
-	@Override
-	public boolean shouldActivateAnimation(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
-		if (!AnimationUtils.extraIsPresent) return false;
-		
-		return super.shouldActivateAnimation(player, axisAlignedBB);
 	}
 	
 	@Override
@@ -55,7 +48,6 @@ public class AnimDashing extends AnimCommon {
 		//partHolder.resetAnimationRotationPoints();
 		
 		i = clampedI(i);
-		System.out.println(customEntity.lmm_$getTimeRendered());
 		float straf = -GeneralUtils.getMovementComponents(entity)[1];
 		
 		entity.renderYawOffset = entity.rotationYawHead + 45 * straf;

@@ -2,6 +2,7 @@ package net.dravigen.let_me_move_ex;
 
 import btw.AddonHandler;
 import btw.BTWAddon;
+import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.let_me_move_ex.animation.AnimRegistry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.*;
@@ -29,6 +30,9 @@ public class LetMeMoveExAddon extends BTWAddon {
 	public void initialize() {
 		if (!MinecraftServer.getIsServer()) {
 			initKeybind();
+		}
+		else {
+			AnimationUtils.extraIsPresent = true;
 		}
 		
 		AnimRegistry.registerAllAnimation();

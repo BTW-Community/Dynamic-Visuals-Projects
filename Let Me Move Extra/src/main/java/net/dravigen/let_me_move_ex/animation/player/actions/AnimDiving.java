@@ -9,18 +9,11 @@ import net.minecraft.src.*;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.crawl_key;
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 
-public class AnimDiving extends AnimCommon {
+public class AnimDiving extends AnimBaseAction {
 	public static ResourceLocation id = new ResourceLocation("LMM", "diving");
 	
 	public AnimDiving() {
 		super(id, 0.8f, 0.005f, true);
-	}
-	
-	@Override
-	public boolean shouldActivateAnimation(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
-		if (!AnimationUtils.extraIsPresent) return false;
-		
-		return super.shouldActivateAnimation(player, axisAlignedBB);
 	}
 	
 	@Override

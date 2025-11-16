@@ -4,12 +4,11 @@ import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
 import net.minecraft.src.*;
-import net.dravigen.let_me_move.animation.player.poses.AnimCommon;
 
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.crawl_key;
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 
-public class AnimSwimming extends AnimCommon {
+public class AnimSwimming extends AnimBaseAction {
 	public static final ResourceLocation id = new ResourceLocation("LMM", "swimming");
 	
 	public AnimSwimming() {
@@ -18,13 +17,6 @@ public class AnimSwimming extends AnimCommon {
 	
 	public AnimSwimming(ResourceLocation id) {
 		super(id, 0.8f, 0.15f, true);
-	}
-	
-	@Override
-	public boolean shouldActivateAnimation(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
-		if (!AnimationUtils.extraIsPresent) return false;
-		
-		return super.shouldActivateAnimation(player, axisAlignedBB);
 	}
 	
 	@Override

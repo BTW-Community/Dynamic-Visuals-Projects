@@ -8,20 +8,13 @@ import net.dravigen.let_me_move.animation.player.poses.AnimCommon;
 
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 
-public class AnimPullingUp extends AnimCommon {
+public class AnimPullingUp extends AnimBaseAction {
 	public static final ResourceLocation id = new ResourceLocation("LMM", "pullingUp");
 	private static double yBlockAboveWall;
 	private coords prevSide;
 	
 	public AnimPullingUp() {
 		super(id, 1.4f, 1f, false, 20, 40, false);
-	}
-	
-	@Override
-	public boolean shouldActivateAnimation(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
-		if (!AnimationUtils.extraIsPresent) return false;
-		
-		return super.shouldActivateAnimation(player, axisAlignedBB);
 	}
 	
 	@Override
