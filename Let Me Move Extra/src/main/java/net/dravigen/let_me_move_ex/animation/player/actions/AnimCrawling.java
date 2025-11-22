@@ -1,5 +1,6 @@
 package net.dravigen.let_me_move_ex.animation.player.actions;
 
+import net.dravigen.let_me_move_ex.LmmEx_Settings;
 import net.minecraft.src.AxisAlignedBB;
 import net.minecraft.src.EntityPlayer;
 import net.minecraft.src.ResourceLocation;
@@ -17,6 +18,10 @@ public class AnimCrawling extends AnimSwimming {
 	
 	@Override
 	public boolean isGeneralConditonsMet(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
+		if (!LmmEx_Settings.SHOULD_CRAWL.getBool()) {
+			return false;
+		}
+		
 		return !player.capabilities.isFlying && player.onGround && !isInsideWater(player) && !player.isOnLadder();
 	}
 	

@@ -1,6 +1,5 @@
 package net.dravigen.dranimation_lib.mixin;
 
-import net.dravigen.dranimation_lib.DraNimationLibAddon;
 import net.dravigen.dranimation_lib.gui.GuiDVS_Settings;
 import net.dravigen.dranimation_lib.gui.GuiButtonCustom;
 import net.minecraft.src.GuiButton;
@@ -34,7 +33,7 @@ public class GuiOptionsMixin extends GuiScreen {
 	@Inject(method = "actionPerformed", at = @At("HEAD"))
 	private void onActionPerformed(GuiButton button, CallbackInfo ci) {
 		if (button.id == VDS_SETTINGS_ID) {
-			this.mc.displayGuiScreen(new GuiDVS_Settings(this, DraNimationLibAddon.settingsManager));
+			this.mc.displayGuiScreen(new GuiDVS_Settings(this));
 		}
 	}
 }

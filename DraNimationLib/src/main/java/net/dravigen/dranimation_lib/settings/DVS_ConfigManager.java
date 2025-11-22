@@ -9,7 +9,7 @@ import java.util.*;
 @SuppressWarnings("unused")
 public class DVS_ConfigManager {
 	
-	private final File file;
+	private static final File file = new File("config/dynamic_visuals.properties");
 	private static final Properties properties = new Properties();
 	private static boolean isDirty = false;
 	
@@ -21,17 +21,6 @@ public class DVS_ConfigManager {
 		BOOLEAN,
 		INT,
 		DOUBLE,
-	}
-	
-	
-	public DVS_ConfigManager(File file) {
-		this.file = file;
-		
-		if (file.getParentFile() != null) {
-			file.getParentFile().mkdirs();
-		}
-		
-		loadFromFile();
 	}
 	
 	public static <T> ConfigValue<T> registerBool(String id, String name, T defaultValue, String description, String category) {
@@ -85,7 +74,7 @@ public class DVS_ConfigManager {
 		};
 	}
 	
-	public void save() {
+	public static void save() {
 		if (!isDirty && file.exists()) return;
 		
 		for (BaseSetting setting : settings) {
@@ -101,7 +90,7 @@ public class DVS_ConfigManager {
 		}
 	}
 	
-	private void loadFromFile() {
+	public static void loadFromFile() {
 		if (!file.exists()) return;
 		try (FileInputStream fis = new FileInputStream(file)) {
 			properties.load(fis);
@@ -110,7 +99,7 @@ public class DVS_ConfigManager {
 		}
 	}
 	
-	public List<BaseSetting> getSettings() {
+	public static List<BaseSetting> getSettings() {
 		return Collections.unmodifiableList(settings);
 	}
 	
@@ -118,19 +107,19 @@ public class DVS_ConfigManager {
 		return configValues.get(id);
 	}
 	
-	public int getInt(String id) {
+	public static int getInt(String id) {
 		return (int) configValues.get(id);
 	}
 	
-	public double getDouble(String id) {
+	public static double getDouble(String id) {
 		return (double) configValues.get(id);
 	}
 	
-	public boolean getBoolean(String id) {
+	public static boolean getBoolean(String id) {
 		return (boolean) configValues.get(id);
 	}
 	
-	public void setValue(String id, Object value) {
+	public static void setValue(String id, Object value) {
 		if (configValues.containsKey(id)) {
 			configValues.put(id, value);
 			isDirty = true;

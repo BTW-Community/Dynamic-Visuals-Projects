@@ -4,6 +4,7 @@ import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
+import net.dravigen.let_me_move_ex.LmmEx_Settings;
 import net.minecraft.src.*;
 
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.pi;
@@ -18,6 +19,10 @@ public class AnimDashing extends AnimBaseAction {
 	
 	@Override
 	public boolean isGeneralConditonsMet(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
+		if (!LmmEx_Settings.SHOULD_DASH.getBool()) {
+			return false;
+		}
+		
 		return !player.isEating() && player.moveForward == 0 && player.onGround && !player.doesStatusPreventSprinting();
 	}
 	

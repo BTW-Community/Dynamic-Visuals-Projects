@@ -1,8 +1,7 @@
 package net.dravigen.let_me_see.mixin;
 
-import net.dravigen.dranimation_lib.DraNimationLibAddon;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
-import net.dravigen.let_me_see.config.LmsSettings;
+import net.dravigen.let_me_see.config.LMS_Settings;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,8 +35,8 @@ public abstract class EntityRendererMixin {
 			
 			EntityClientPlayerMP player = mc.thePlayer;
 			
-			float strafingMul = (float) LmsSettings.STRAFING_MULTIPLIER.getDouble();
-			float cameraMul = (float) LmsSettings.CAMERA_MULTIPLIER.getDouble();
+			float strafingMul = (float) LMS_Settings.STRAFING_MULTIPLIER.getDouble();
+			float cameraMul = (float) LMS_Settings.CAMERA_MULTIPLIER.getDouble();
 
 			float goal = (player.moveStrafing != 0 ? (float) (-2.5f * Math.pow(player.moveStrafing, 3)) : 0) * strafingMul +
 								(1.25f * (player.rotationYaw - prevYaw)) * cameraMul;
@@ -48,7 +47,7 @@ public abstract class EntityRendererMixin {
 			
 			strafAngle = MathHelper.clamp_float(incrementUntilGoal(strafAngle, goal, delta * factor), -10, 10);
 			
-			float mul = (float) LmsSettings.BOBBING_MULTIPLIER.getDouble();
+			float mul = (float) LMS_Settings.BOBBING_MULTIPLIER.getDouble();
 			
 			GL11.glRotatef(angle * Math.max(0, 3f * mul) + strafAngle, x, y, z);
 		}
@@ -74,9 +73,9 @@ public abstract class EntityRendererMixin {
 																  12 * (float) player.motionY,
 																  delta * factor2), -5, 8);
 			
-			float mul = (float) LmsSettings.BOBBING_MULTIPLIER.getDouble();
-			float forwardMul = (float) LmsSettings.FORWARD_MULTIPLIER.getDouble();
-			float jumpMul = (float) LmsSettings.JUMP_MULTIPLIER.getDouble();
+			float mul = (float) LMS_Settings.BOBBING_MULTIPLIER.getDouble();
+			float forwardMul = (float) LMS_Settings.FORWARD_MULTIPLIER.getDouble();
+			float jumpMul = (float) LMS_Settings.JUMP_MULTIPLIER.getDouble();
 			
 			GL11.glRotatef(angle * Math.max(0, 2f * mul) + frowAngle * forwardMul, x, y, z);
 			GL11.glRotatef(jumpAngle * jumpMul, x, y, z);
@@ -89,7 +88,7 @@ public abstract class EntityRendererMixin {
 		
 		boolean holdingSpecialItem = item != null && item.itemID == Item.map.itemID;
 		
-		if (DraNimationLibAddon.settingsManager.getBoolean(LmsSettings.firstPersonModelID) && !holdingSpecialItem) {
+		if (LMS_Settings.FIRST_PERSON_MODEL.getBool() && !holdingSpecialItem) {
 			ci.cancel();
 		}
 	}

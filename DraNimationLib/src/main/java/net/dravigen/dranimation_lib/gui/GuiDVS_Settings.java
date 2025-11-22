@@ -24,7 +24,6 @@ public class GuiDVS_Settings extends GuiScreen {
 	
 	public static final int buttonIDStart = 1000;
 	
-	private final DVS_ConfigManager settingsManager;
 	private final GuiScreen parentScreen;
 	
 	private final TreeMap<String, List<BaseSetting>> categorizedSettings;
@@ -34,10 +33,9 @@ public class GuiDVS_Settings extends GuiScreen {
 	private int lastMouseY;
 	private boolean isScrolling = false;
 	
-	public GuiDVS_Settings(GuiScreen parent, DVS_ConfigManager manager) {
+	public GuiDVS_Settings(GuiScreen parent) {
 		this.parentScreen = parent;
-		this.settingsManager = manager;
-		this.settingList = settingsManager.getSettings();
+		this.settingList = DVS_ConfigManager.getSettings();
 		
 		this.categorizedSettings = new TreeMap<>();
 		
@@ -55,11 +53,11 @@ public class GuiDVS_Settings extends GuiScreen {
 			BaseSetting setting = settingList.get(settingIndex);
 			
 			if (setting.type() == DVS_ConfigManager.Type.BOOLEAN) {
-				boolean currentValue = settingsManager.getBoolean(setting.id());
-				settingsManager.setValue(setting.id(), !currentValue);
+				boolean currentValue = DVS_ConfigManager.getBoolean(setting.id());
+				DVS_ConfigManager.setValue(setting.id(), !currentValue);
 			}
 			else if (setting.type() == DVS_ConfigManager.Type.DOUBLE) {
-				double currentValue = settingsManager.getDouble(setting.id());
+				double currentValue = DVS_ConfigManager.getDouble(setting.id());
 				
 				double delta = (actionType == 0) ? -0.1 : 0.1;
 				double modifier = 1.0;
@@ -72,10 +70,10 @@ public class GuiDVS_Settings extends GuiScreen {
 				newValue = Math.max(newValue, setting.min());
 				newValue = Math.min(newValue, setting.max());
 				
-				settingsManager.setValue(setting.id(), newValue);
+				DVS_ConfigManager.setValue(setting.id(), newValue);
 			}
 			else if (setting.type() == DVS_ConfigManager.Type.INT) {
-				int currentValue = settingsManager.getInt(setting.id());
+				int currentValue = DVS_ConfigManager.getInt(setting.id());
 				
 				int delta = (actionType == 0) ? -1 : 1;
 				int modifier = 1;
@@ -87,7 +85,7 @@ public class GuiDVS_Settings extends GuiScreen {
 				newValue = (int) Math.max(newValue, setting.min());
 				newValue = (int) Math.min(newValue, setting.max());
 				
-				settingsManager.setValue(setting.id(), newValue);
+				DVS_ConfigManager.setValue(setting.id(), newValue);
 			}
 		}
 	}
@@ -181,7 +179,7 @@ public class GuiDVS_Settings extends GuiScreen {
 						int controlY = itemY + (ITEM_HEIGHT - BUTTON_HEIGHT) / 2;
 						
 						if (setting.type() == DVS_ConfigManager.Type.BOOLEAN) {
-							boolean val = settingsManager.getBoolean(setting.id());
+							boolean val = DVS_ConfigManager.getBoolean(setting.id());
 							String buttonText = val ? "True" : "False";
 							
 							GuiButton toggleButton = new GuiButton(buttonIDStart + (originalIndex * 2),
@@ -194,7 +192,7 @@ public class GuiDVS_Settings extends GuiScreen {
 							this.buttonList.add(toggleButton);
 						}
 						else if (setting.type() == DVS_ConfigManager.Type.DOUBLE) {
-							double val = settingsManager.getDouble(setting.id());
+							double val = DVS_ConfigManager.getDouble(setting.id());
 							String valText = String.format("%.2f", val);
 							
 							this.drawCenteredString(this.fontRenderer,
@@ -222,7 +220,7 @@ public class GuiDVS_Settings extends GuiScreen {
 							this.buttonList.add(incButton);
 						}
 						else if (setting.type() == DVS_ConfigManager.Type.INT) {
-							int val = settingsManager.getInt(setting.id());
+							int val = DVS_ConfigManager.getInt(setting.id());
 							String valText = String.valueOf(val);
 							
 							this.drawCenteredString(this.fontRenderer,
@@ -284,11 +282,10 @@ public class GuiDVS_Settings extends GuiScreen {
 	protected void mouseClicked(int mouseX, int mouseY, int button) {
 		super.mouseClicked(mouseX, mouseY, button);
 		
-		int scrollXStart = this.width / 2 - 150;
 		int scrollXEnd = this.width / 2 + 150;
 		int scrollYEnd = this.height - 40;
 		
-		if (mouseX >= scrollXStart &&
+		if (mouseX >= scrollXEnd &&
 				mouseX <= scrollXEnd + SCROLLBAR_WIDTH &&
 				mouseY >= HEADER_HEIGHT &&
 				mouseY <= scrollYEnd) {
@@ -310,7 +307,7 @@ public class GuiDVS_Settings extends GuiScreen {
 	protected void actionPerformed(GuiButton button) {
 		if (button.enabled) {
 			if (button.id == 200) {
-				settingsManager.save();
+				DVS_ConfigManager.save();
 				this.mc.displayGuiScreen(this.parentScreen);
 			} else if (button.id >= buttonIDStart) {
 				handleSettingInteraction(button.id);

@@ -1,10 +1,8 @@
 package net.dravigen.let_me_see.mixin;
 
 import btw.client.texture.CustomUpdatingTexture;
-import net.dravigen.dranimation_lib.DraNimationLibAddon;
 import net.dravigen.dranimation_lib.utils.GeneralUtils;
-import net.dravigen.let_me_see.LetMeSeeAddon;
-import net.dravigen.let_me_see.config.LmsSettings;
+import net.dravigen.let_me_see.config.LMS_Settings;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,7 +42,7 @@ public abstract class RenderPlayerMixin extends RendererLivingEntity {
 		Minecraft mc = Minecraft.getMinecraft();
 		ItemStack heldItem = mc.thePlayer.getHeldItem();
 		
-		if (DraNimationLibAddon.settingsManager.getBoolean(LmsSettings.firstPersonModelID) &&
+		if (LMS_Settings.FIRST_PERSON_MODEL.getBool() &&
 				mc.gameSettings.thirdPersonView == 0 &&
 				heldItem != null &&
 				(heldItem.itemID == Item.map.itemID) &&
@@ -58,12 +56,12 @@ public abstract class RenderPlayerMixin extends RendererLivingEntity {
 	private void offsetPlayerIn1stPerson(AbstractClientPlayer entity, float par2, float par3, float par4,
 			CallbackInfo ci) {
 		Minecraft mc = Minecraft.getMinecraft();
-		if (DraNimationLibAddon.settingsManager.getBoolean(LmsSettings.firstPersonModelID) &&
+		if (LMS_Settings.FIRST_PERSON_MODEL.getBool() &&
 				entity == mc.thePlayer &&
 				mc.gameSettings.thirdPersonView == 0 &&
 				entity.height >= 1.4f &&
 				!(mc.currentScreen instanceof GuiContainerCreative || mc.currentScreen instanceof GuiInventory)) {
-			float v = 4f;
+			float v = (float) (4f * LMS_Settings.HEAD_OFFSET.getDouble());
 			
 			float i = entity.rotationYaw % 360 / 90 * GeneralUtils.pi / 2;
 			

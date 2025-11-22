@@ -1,8 +1,7 @@
 package net.dravigen.let_me_see.mixin;
 
 import btw.entity.model.PlayerArmorModel;
-import net.dravigen.dranimation_lib.DraNimationLibAddon;
-import net.dravigen.let_me_see.config.LmsSettings;
+import net.dravigen.let_me_see.config.LMS_Settings;
 import net.minecraft.src.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,7 +15,7 @@ public abstract class PlayerArmorModelMixin extends ModelBiped {
 			CallbackInfo ci) {
 		Minecraft mc = Minecraft.getMinecraft();
 		
-		if (DraNimationLibAddon.settingsManager.getBoolean(LmsSettings.firstPersonModelID) &&
+		if (LMS_Settings.FIRST_PERSON_MODEL.getBool() &&
 				entity == mc.thePlayer &&
 				mc.gameSettings.thirdPersonView == 0 &&
 				!(mc.currentScreen instanceof GuiContainerCreative || mc.currentScreen instanceof GuiInventory)) {

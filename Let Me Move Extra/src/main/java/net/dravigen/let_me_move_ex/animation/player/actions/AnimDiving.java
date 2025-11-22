@@ -3,6 +3,7 @@ package net.dravigen.let_me_move_ex.animation.player.actions;
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
+import net.dravigen.let_me_move_ex.LmmEx_Settings;
 import net.minecraft.src.*;
 
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
@@ -17,6 +18,10 @@ public class AnimDiving extends AnimBaseAction {
 	
 	@Override
 	public boolean isGeneralConditonsMet(EntityPlayer player, AxisAlignedBB axisAlignedBB) {
+		if (!LmmEx_Settings.SHOULD_DIVE.getBool()) {
+			return false;
+		}
+		
 		return !player.isEating() && !player.isOnLadder() && !player.onGround && !isInsideWater(player);
 	}
 	
