@@ -1,8 +1,7 @@
 package net.dravigen.dranimation_lib.gui;
 
-import net.dravigen.dranimation_lib.settings.DVS_ConfigManager;
 import net.dravigen.dranimation_lib.settings.BaseSetting;
-
+import net.dravigen.dranimation_lib.settings.DVS_ConfigManager;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.I18n;
@@ -11,9 +10,13 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class GuiDVS_Settings extends GuiScreen {
+	public static final int buttonIDStart = 1000;
 	private static final int HEADER_HEIGHT = 30;
 	private static final int ITEM_HEIGHT = 22;
 	private static final int BUTTON_WIDTH = 100;
@@ -21,9 +24,6 @@ public class GuiDVS_Settings extends GuiScreen {
 	private static final int SCROLLBAR_WIDTH = 6;
 	private static final int SCROLL_AREA_PADDING = 8;
 	private static final int SECTION_HEADER_HEIGHT = 16;
-	
-	public static final int buttonIDStart = 1000;
-	
 	private final GuiScreen parentScreen;
 	
 	private final TreeMap<String, List<BaseSetting>> categorizedSettings;
@@ -168,8 +168,10 @@ public class GuiDVS_Settings extends GuiScreen {
 						int itemMouseYStart = Math.max(scrollYStart, itemY);
 						int itemMouseYEnd = Math.min(scrollYEnd, itemY + ITEM_HEIGHT);
 						
-						if (mouseX >= scrollXStart && mouseX <= scrollXEnd &&
-								mouseY >= itemMouseYStart && mouseY <= itemMouseYEnd) {
+						if (mouseX >= scrollXStart &&
+								mouseX <= scrollXEnd &&
+								mouseY >= itemMouseYStart &&
+								mouseY <= itemMouseYEnd) {
 							hoveredDescription = setting.description();
 						}
 						
@@ -309,7 +311,8 @@ public class GuiDVS_Settings extends GuiScreen {
 			if (button.id == 200) {
 				DVS_ConfigManager.save();
 				this.mc.displayGuiScreen(this.parentScreen);
-			} else if (button.id >= buttonIDStart) {
+			}
+			else if (button.id >= buttonIDStart) {
 				handleSettingInteraction(button.id);
 			}
 		}

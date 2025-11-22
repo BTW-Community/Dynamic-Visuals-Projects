@@ -11,39 +11,37 @@ public class DVS_ConfigManager {
 	
 	private static final File file = new File("config/dynamic_visuals.properties");
 	private static final Properties properties = new Properties();
+	private static final List<BaseSetting> settings = new ArrayList<>();
+	private static final Map<String, Object> configValues = new HashMap<>();
 	private static boolean isDirty = false;
 	
-	private static final List<BaseSetting> settings = new ArrayList<>();
-	
-	private static final Map<String, Object> configValues = new HashMap<>();
-	
-	public enum Type {
-		BOOLEAN,
-		INT,
-		DOUBLE,
-	}
-	
-	public static <T> ConfigValue<T> registerBool(String id, String name, T defaultValue, String description, String category) {
+	public static <T> ConfigValue<T> registerBool(String id, String name, T defaultValue, String description,
+			String category) {
 		return register(id, Type.BOOLEAN, name, defaultValue, 0, 0, description, category);
 	}
 	
-	public static <T> ConfigValue<T> registerDouble(String id, String name, T defaultValue, String description, String category) {
+	public static <T> ConfigValue<T> registerDouble(String id, String name, T defaultValue, String description,
+			String category) {
 		return register(id, Type.DOUBLE, name, defaultValue, 0, 8, description, category);
 	}
 	
-	public static <T> ConfigValue<T> registerDouble(String id, String name, T defaultValue, double min, double max, String description, String category) {
+	public static <T> ConfigValue<T> registerDouble(String id, String name, T defaultValue, double min, double max,
+			String description, String category) {
 		return register(id, Type.DOUBLE, name, defaultValue, min, max, description, category);
 	}
 	
-	public static <T> ConfigValue<T> registerInt(String id, String name, T defaultValue, String description, String category) {
+	public static <T> ConfigValue<T> registerInt(String id, String name, T defaultValue, String description,
+			String category) {
 		return register(id, Type.INT, name, defaultValue, 0, 8, description, category);
 	}
 	
-	public static <T> ConfigValue<T> registerInt(String id, String name, T defaultValue, double min, double max, String description, String category) {
+	public static <T> ConfigValue<T> registerInt(String id, String name, T defaultValue, double min, double max,
+			String description, String category) {
 		return register(id, Type.INT, name, defaultValue, min, max, description, category);
 	}
 	
-	public static  <T> ConfigValue<T> register(String id, Type type, String name, T defaultValue, double min, double max, String description, String category) {
+	public static <T> ConfigValue<T> register(String id, Type type, String name, T defaultValue, double min, double max,
+			String description, String category) {
 		BaseSetting setting = new BaseSetting(id, type, name, defaultValue, min, max, description, category);
 		settings.add(setting);
 		
@@ -57,7 +55,8 @@ public class DVS_ConfigManager {
 				System.err.println("[DVS_ConfigManager] Failed to parse '" + id + "', resetting to default.");
 				isDirty = true;
 			}
-		} else {
+		}
+		else {
 			isDirty = true;
 		}
 		
@@ -103,10 +102,6 @@ public class DVS_ConfigManager {
 		return Collections.unmodifiableList(settings);
 	}
 	
-	public Object getValue(String id) {
-		return configValues.get(id);
-	}
-	
 	public static int getInt(String id) {
 		return (int) configValues.get(id);
 	}
@@ -124,6 +119,16 @@ public class DVS_ConfigManager {
 			configValues.put(id, value);
 			isDirty = true;
 		}
+	}
+	
+	public Object getValue(String id) {
+		return configValues.get(id);
+	}
+	
+	public enum Type {
+		BOOLEAN,
+		INT,
+		DOUBLE,
 	}
 	
 	public static class ConfigValue<T> {

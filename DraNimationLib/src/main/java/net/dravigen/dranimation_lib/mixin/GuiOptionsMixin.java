@@ -1,7 +1,7 @@
 package net.dravigen.dranimation_lib.mixin;
 
-import net.dravigen.dranimation_lib.gui.GuiDVS_Settings;
 import net.dravigen.dranimation_lib.gui.GuiButtonCustom;
+import net.dravigen.dranimation_lib.gui.GuiDVS_Settings;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiOptions;
 import net.minecraft.src.GuiScreen;

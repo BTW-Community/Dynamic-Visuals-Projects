@@ -3,6 +3,7 @@ package net.dravigen.let_me_see.config;
 import net.dravigen.dranimation_lib.settings.DVS_ConfigManager;
 
 public class LMS_Settings {
+	private static final String category = "Let Me See !";
 	public static DVS_ConfigManager.ConfigValue<Boolean> FIRST_PERSON_MODEL;
 	public static DVS_ConfigManager.ConfigValue<Double> HEAD_OFFSET;
 	public static DVS_ConfigManager.ConfigValue<Double> JUMP_MULTIPLIER;
@@ -10,8 +11,6 @@ public class LMS_Settings {
 	public static DVS_ConfigManager.ConfigValue<Double> FORWARD_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> STRAFING_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> CAMERA_MULTIPLIER;
-	
-	private static final String category = "Let Me See !";
 	
 	public static void registerAllSettings() {
 		FIRST_PERSON_MODEL = DVS_ConfigManager.registerBool("3dModel",

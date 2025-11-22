@@ -37,9 +37,9 @@ public abstract class EntityRendererMixin {
 			
 			float strafingMul = (float) LMS_Settings.STRAFING_MULTIPLIER.getDouble();
 			float cameraMul = (float) LMS_Settings.CAMERA_MULTIPLIER.getDouble();
-
-			float goal = (player.moveStrafing != 0 ? (float) (-2.5f * Math.pow(player.moveStrafing, 3)) : 0) * strafingMul +
-								(1.25f * (player.rotationYaw - prevYaw)) * cameraMul;
+			
+			float goal = (player.moveStrafing != 0 ? (float) (-2.5f * Math.pow(player.moveStrafing, 3)) : 0) *
+					strafingMul + (1.25f * (player.rotationYaw - prevYaw)) * cameraMul;
 			
 			float factor = player.moveStrafing == 0 || player.rotationYaw - prevYaw == 0 ? 0.15f : 0.005f;
 			
@@ -61,7 +61,9 @@ public abstract class EntityRendererMixin {
 			
 			EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 			
-			float goal = player.moveForward != 0 ? player.isSprinting() ? 5 * player.moveForward : 3 * player.moveForward : 0;
+			float goal = player.moveForward != 0 ? player.isSprinting()
+												   ? 5 * player.moveForward
+												   : 3 * player.moveForward : 0;
 			
 			boolean still = player.moveForward == 0 || player.motionY == 0;
 			
