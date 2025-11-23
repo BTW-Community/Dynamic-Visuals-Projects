@@ -40,7 +40,7 @@ public class GuiDVS_Settings extends GuiScreen {
 		this.categorizedSettings = new TreeMap<>();
 		
 		for (BaseSetting setting : this.settingList) {
-			String category = setting.category() == null ? "General" : setting.category();
+			String category = setting.category() == null || setting.category().isEmpty() ? "General" : setting.category();
 			this.categorizedSettings.computeIfAbsent(category, k -> new ArrayList<>()).add(setting);
 		}
 	}

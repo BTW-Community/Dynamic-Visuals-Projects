@@ -72,7 +72,7 @@ public abstract class EntityRendererMixin {
 			
 			frowAngle = MathHelper.clamp_float(incrementUntilGoal(frowAngle, goal, delta * factor1), -5, 10);
 			jumpAngle = MathHelper.clamp_float(incrementUntilGoal(jumpAngle,
-																  12 * (float) player.motionY,
+																  12 * (float) (player.posY - player.prevPosY),
 																  delta * factor2), -5, 8);
 			
 			float mul = (float) LMS_Settings.BOBBING_MULTIPLIER.getDouble();

@@ -21,11 +21,6 @@ public class LetMeMoveAddon extends BTWAddon {
 			.syncPlayer()
 			.buildPlayer();
 	
-	
-	public LetMeMoveAddon() {
-		super();
-	}
-	
 	public static boolean isExtraLoaded() {
 		return AddonHandler.isModInstalled("let_me_move_ex") && AnimationUtils.extraIsPresent;
 	}
