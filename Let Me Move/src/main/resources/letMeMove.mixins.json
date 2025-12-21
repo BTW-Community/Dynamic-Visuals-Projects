@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "EntityLivingBaseMixin",
+    "client.EntityClientPlayerMPMixin",
     "client.render.EntityRendererMixin",
     "client.render.RendererLivingEntityMixin",
     "client.render.RenderPlayerMixin",
