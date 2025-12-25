@@ -23,6 +23,17 @@ public abstract class RenderPlayerMixin extends RendererLivingEntity {
 		super(par1ModelBase, par2);
 	}
 	
+	@Redirect(method = "renderSpecials", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/TileEntitySkullRenderer;func_82393_a(FFFIFILjava/lang/String;)V"))
+	private void disableHeadIf1stPers(TileEntitySkullRenderer instance, float v, float par1, float par2, int par3,
+			float par4, int par5, String par6, AbstractClientPlayer player) {
+		Minecraft mc = Minecraft.getMinecraft();
+		
+		if (player == mc.thePlayer && !(mc.currentScreen instanceof GuiContainerCreative || mc.currentScreen instanceof GuiInventory) && mc.gameSettings.thirdPersonView == 0 && LMS_Settings.FIRST_PERSON_MODEL.getBool())
+			return;
+	
+		instance.func_82393_a(v, par1, par2, par3, par4, par5, par6);
+	}
+	
 	@Redirect(method = "renderSpecials", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/ItemRenderer;renderItem(Lnet/minecraft/src/EntityLivingBase;Lnet/minecraft/src/ItemStack;I)V", ordinal = 2))
 	private void renderCompassAndClock(ItemRenderer instance, EntityLivingBase var15, ItemStack var16, int var5) {
 		ItemStack var8 = var15.getHeldItem();
@@ -71,12 +82,12 @@ public abstract class RenderPlayerMixin extends RendererLivingEntity {
 	}
 	
 	@ModifyArg(method = "renderSpecials", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glRotatef(FFFF)V", ordinal = 11), index = 0)
-	private float a(float angle) {
+	private float verticalBow(float angle) {
 		return 0;
 	}
 	
 	@ModifyArg(method = "renderSpecials", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glTranslatef(FFF)V", ordinal = 6), index = 0)
-	private float b(float angle) {
+	private float offsetBowInnerHand(float angle) {
 		return 2 / 16f;
 	}
 }

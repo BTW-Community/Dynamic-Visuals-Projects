@@ -229,7 +229,7 @@ public class AnimCommon extends BaseAnimation {
 		MovementType movementType = GeneralUtils.getRelativeMovement(player);
 		
 		boolean isFloating = player.inWater && !player.onGround;
-		double motionY = player.posY - player.prevPosY;
+		double motionY = player.posY - player.lastTickPosY;
 		boolean isJumping = customEntity.lmm_$getJumpTime() > 0 && !player.inWater;
 		boolean isCrouching = model.isSneak || customEntity.lmm_$isAnimation(AnimCrouching.id);
 		boolean isFlying = customEntity.lmm_$getIsFlying() && !player.isRiding();
@@ -240,7 +240,7 @@ public class AnimCommon extends BaseAnimation {
 		boolean bSprint = player.isSprinting();
 		boolean backward = movementType == MovementType.BACKWARD && straf == 0;
 		int jumpSwing = customEntity.lmm_$getJumpSwing();
-		boolean isMoving = player.posX != player.prevPosX || player.posZ != player.prevPosZ;
+		boolean isMoving = g > 0.01;
 		
 		if (entity == Minecraft.getMinecraft().thePlayer && !entity.isRiding()) {
 			float yaw;

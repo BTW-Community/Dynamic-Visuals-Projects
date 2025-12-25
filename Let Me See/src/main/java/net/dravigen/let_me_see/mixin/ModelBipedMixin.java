@@ -30,8 +30,10 @@ public abstract class ModelBipedMixin {
 	private void hideBasePart(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7,
 			CallbackInfo ci) {
 		Minecraft mc = Minecraft.getMinecraft();
+		
+		if (entity != mc.thePlayer) return;
+		
 		boolean isFirstPers = LMS_Settings.FIRST_PERSON_MODEL.getBool() &&
-				entity == mc.thePlayer &&
 				mc.gameSettings.thirdPersonView == 0 &&
 				!(mc.currentScreen instanceof GuiContainerCreative || mc.currentScreen instanceof GuiInventory);
 		
@@ -41,20 +43,22 @@ public abstract class ModelBipedMixin {
 		}
 		
 		boolean isArmor = (Object) this instanceof PlayerArmorModel;
-		boolean hasHelmet = mc.thePlayer.getCurrentArmor(3) != null;
-		boolean hasChest = mc.thePlayer.getCurrentArmor(2) != null;
+		ItemStack helmet = mc.thePlayer.getCurrentArmor(3);
+		boolean hasHelmet = helmet != null && helmet.getItem() instanceof ItemArmor;
+		ItemStack chestplate = mc.thePlayer.getCurrentArmor(2);
+		boolean hasChest = chestplate != null && chestplate.getItem() instanceof ItemArmor ;
 		
 		if (isFirstPers) {
 			boolean isSliding = false;
 			
-			if (AddonHandler.isModInstalled("let_me_move")) {
+			if (AddonHandler.isModInstalled("let_me_move_ex")) {
 				isSliding = ((ICustomMovementEntity) entity).lmm_$isAnimation(new ResourceLocation("LMM",
 																								   "wallSliding"));
 			}
 			
 			boolean showChest = mc.thePlayer.isPlayerSleeping() || entity.height > 1.4 && !isSliding;
 			if (isArmor) {
-				this.bipedBody.showModel = hasChest && (showChest);
+				this.bipedBody.showModel = hasChest && (showChest) && this.bipedBody.showModel;
 			}
 			else {
 				this.bipedBody.showModel = showChest;
@@ -68,8 +72,8 @@ public abstract class ModelBipedMixin {
 			}
 			else {
 				if (isArmor) {
-					this.bipedRightArm.showModel = hasChest;
-					this.bipedLeftArm.showModel = hasChest;
+					this.bipedRightArm.showModel = hasChest && this.bipedRightArm.showModel;
+					this.bipedLeftArm.showModel = hasChest && this.bipedLeftArm.showModel;
 				}
 				else {
 					this.bipedRightArm.showModel = true;
@@ -79,11 +83,11 @@ public abstract class ModelBipedMixin {
 		}
 		else {
 			if (isArmor) {
-				this.bipedHead.showModel = hasHelmet;
-				this.bipedHeadwear.showModel = hasHelmet;
-				this.bipedBody.showModel = hasChest;
-				this.bipedRightArm.showModel = hasChest;
-				this.bipedLeftArm.showModel = hasChest;
+				this.bipedHead.showModel = hasHelmet && this.bipedHead.showModel;
+				this.bipedHeadwear.showModel = hasHelmet && this.bipedHeadwear.showModel;
+				this.bipedBody.showModel = hasChest && this.bipedBody.showModel;
+				this.bipedRightArm.showModel = hasChest && this.bipedRightArm.showModel;
+				this.bipedLeftArm.showModel = hasChest && this.bipedLeftArm.showModel;
 			}
 			else {
 				this.bipedHead.showModel = true;

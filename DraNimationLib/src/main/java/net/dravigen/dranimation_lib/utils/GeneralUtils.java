@@ -269,8 +269,8 @@ public class GeneralUtils {
 	 * AI Stuff
 	 */
 	public static MovementType getRelativeMovement(EntityLivingBase player) {
-		double dx = player.posX - player.prevPosX;
-		double dz = player.posZ - player.prevPosZ;
+		double dx = player.posX - player.lastTickPosX;
+		double dz = player.posZ - player.lastTickPosZ;
 		
 		double magnitudeSq = (dx * dx) + (dz * dz);
 		
@@ -318,8 +318,8 @@ public class GeneralUtils {
 	 * AI Stuff
 	 */
 	public static float[] getMovementComponents(EntityLivingBase player) {
-		double dx = player.posX - player.prevPosX;
-		double dz = player.posZ - player.prevPosZ;
+		double dx = player.posX - player.lastTickPosX;
+		double dz = player.posZ - player.lastTickPosZ;
 		
 		double magnitudeSq = (dx * dx) + (dz * dz);
 		

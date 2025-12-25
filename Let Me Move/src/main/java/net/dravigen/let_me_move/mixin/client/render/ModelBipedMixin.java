@@ -148,13 +148,15 @@ public abstract class ModelBipedMixin extends ModelBase {
 		if (entity instanceof EntityPlayer player) {
 			Minecraft mc = Minecraft.getMinecraft();
 			if (player != mc.thePlayer) {
-				f = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
-									   customEntity.lmm_$getPrevLimbSwing()[0],
-									   customEntity.lmm_$getLimbSwing()[0]);
-				g = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
-									   customEntity.lmm_$getPrevLimbSwing()[1],
-									   customEntity.lmm_$getLimbSwing()[1]);
-				customEntity.lmm_$setPrevLimbSwing(new float[]{f, g});
+				if (LetMeMoveAddon.serverHasLetMeMove()) {
+					f = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
+										   customEntity.lmm_$getPrevLimbSwing()[0],
+										   customEntity.lmm_$getLimbSwing()[0]);
+					g = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
+										   customEntity.lmm_$getPrevLimbSwing()[1],
+										   customEntity.lmm_$getLimbSwing()[1]);
+					customEntity.lmm_$setPrevLimbSwing(new float[]{f, g});
+				}
 			}
 			else {
 				customEntity.lmm_$setLimbSwing(new float[]{f, g});

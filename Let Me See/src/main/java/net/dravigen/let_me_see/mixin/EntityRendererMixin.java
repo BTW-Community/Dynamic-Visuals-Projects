@@ -49,7 +49,7 @@ public abstract class EntityRendererMixin {
 			
 			float goal = (float) ((player.moveStrafing != 0 ? -1.5 * Math.pow(player.moveStrafing, 3) : 0) *
 					strafingMul +
-					swingMul *
+					1.5 * swingMul *
 							GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
 											   player.prevSwingProgress,
 											   player.swingProgress) +
