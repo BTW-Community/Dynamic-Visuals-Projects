@@ -9,6 +9,7 @@ public class LMS_Settings {
 	public static DVS_ConfigManager.ConfigValue<Double> JUMP_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> SWING_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> BOBBING_MULTIPLIER;
+	public static DVS_ConfigManager.ConfigValue<Double> EATING_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> FORWARD_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> STRAFING_MULTIPLIER;
 	public static DVS_ConfigManager.ConfigValue<Double> CAMERA_MULTIPLIER;
@@ -43,6 +44,14 @@ public class LMS_Settings {
 															  16,
 															  "Handles head's movement when moving",
 															  category);
+		
+		EATING_MULTIPLIER = DVS_ConfigManager.registerDouble("eatingMul",
+															 "Eating Multiplier",
+															 1.0,
+															 -16,
+															 16,
+															 "Handles head's movement when eating",
+															 category);
 		
 		STRAFING_MULTIPLIER = DVS_ConfigManager.registerDouble("strafingMul",
 															   "Strafing Multiplier",

@@ -26,10 +26,27 @@ public abstract class ModelBipedMixin {
 	@Shadow
 	public ModelRenderer bipedHeadwear;
 	
+	@Shadow
+	public ModelRenderer bipedRightLeg;
+	
+	@Shadow
+	public ModelRenderer bipedLeftLeg;
+	
 	@Inject(method = "render", at = @At("HEAD"))
 	private void hideBasePart(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7,
 			CallbackInfo ci) {
 		Minecraft mc = Minecraft.getMinecraft();
+		boolean isArmor = (Object) this instanceof PlayerArmorModel;
+		
+		if (!isArmor){
+			this.bipedHead.showModel = true;
+			this.bipedHeadwear.showModel = true;
+			this.bipedBody.showModel = true;
+			this.bipedRightArm.showModel = true;
+			this.bipedLeftArm.showModel = true;
+			this.bipedRightLeg.showModel = true;
+			this.bipedLeftLeg.showModel = true;
+		}
 		
 		if (entity != mc.thePlayer) return;
 		
@@ -42,7 +59,6 @@ public abstract class ModelBipedMixin {
 			this.bipedHeadwear.showModel = false;
 		}
 		
-		boolean isArmor = (Object) this instanceof PlayerArmorModel;
 		ItemStack helmet = mc.thePlayer.getCurrentArmor(3);
 		boolean hasHelmet = helmet != null && helmet.getItem() instanceof ItemArmor;
 		ItemStack chestplate = mc.thePlayer.getCurrentArmor(2);

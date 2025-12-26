@@ -1,5 +1,7 @@
 package net.dravigen.let_me_see.mixin;
 
+import api.item.items.ProgressiveCraftingItem;
+import btw.item.items.FoodItem;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.let_me_see.config.LMS_Settings;
@@ -45,7 +47,15 @@ public abstract class EntityRendererMixin {
 			
 			float strafingMul = (float) LMS_Settings.STRAFING_MULTIPLIER.getDouble();
 			float cameraMul = (float) LMS_Settings.CAMERA_MULTIPLIER.getDouble();
+			float eatingMul = (float) LMS_Settings.EATING_MULTIPLIER.getDouble();
 			float swingMul = (float) LMS_Settings.SWING_MULTIPLIER.getDouble();
+			
+			ItemStack heldItem = player.getHeldItem();
+			
+			boolean isEating = player.isEating() && heldItem != null && (heldItem.getItem() instanceof FoodItem ||
+					heldItem.getItem() instanceof ItemFood ||
+					heldItem.getItem() instanceof ItemPotion ||
+					heldItem.getItem() instanceof ProgressiveCraftingItem);
 			
 			float goal = (float) ((player.moveStrafing != 0 ? -1.5 * Math.pow(player.moveStrafing, 3) : 0) *
 					strafingMul +
@@ -54,7 +64,7 @@ public abstract class EntityRendererMixin {
 											   player.prevSwingProgress,
 											   player.swingProgress) +
 					(0.5 * (player.rotationYaw - prevYaw)) * cameraMul +
-					(player.isEating() ? 1.5f * GeneralUtils.cos(player.ticksExisted) : 0));
+					(isEating ? 1.5f * eatingMul * GeneralUtils.cos(player.ticksExisted) : 0));
 			
 			float factor = player.moveStrafing == 0 || player.rotationYaw - prevYaw == 0 ? 0.25f : 0.005f;
 			

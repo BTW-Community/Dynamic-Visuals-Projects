@@ -1,5 +1,6 @@
 package net.dravigen.let_me_move.animation.player.poses;
 
+import btw.block.BTWBlocks;
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
@@ -95,6 +96,13 @@ public class AnimClimbing extends AnimCommon {
 	
 	@Override
 	public boolean customBodyHeadRotation(EntityLivingBase entity) {
-		return true;
+		int x = MathHelper.floor_double(entity.posX);
+		int y = MathHelper.floor_double(entity.boundingBox.minY);
+		int z = MathHelper.floor_double(entity.posZ);
+		
+		World world = entity.worldObj;
+		int id = world.getBlockId(x, y, z);
+		
+		return id == BTWBlocks.ladder.blockID;
 	}
 }

@@ -60,8 +60,11 @@ public class AnimCommon extends BaseAnimation {
 	protected void eatFood(float h, EntityLivingBase player, float[] head, float[] rArm) {
 		ItemStack heldItem = player.getHeldItem();
 		
-		if (heldItem == null || !(heldItem.getItem() instanceof FoodItem || heldItem.getItem() instanceof ItemPotion || heldItem.getItem() instanceof ProgressiveCraftingItem)) return;
-		
+		if (heldItem == null ||
+				!(heldItem.getItem() instanceof ItemFood ||
+						heldItem.getItem() instanceof ItemPotion ||
+						heldItem.getItem() instanceof ProgressiveCraftingItem)) return;
+	
 		if (player.isEating()) {
 			head[0] += sin(h * 2) * pi(1, 32);
 			head[2] += sin(h) * pi(1, 16);
@@ -274,7 +277,7 @@ public class AnimCommon extends BaseAnimation {
 				
 				entity.renderYawOffset = incrementAngleUntilGoal(entity.renderYawOffset,
 																 entity.rotationYaw + yaw,
-																 delta * 0.5f);
+																 delta * 0.35f);
 			}
 			else if (isMoving) {
 				yaw = forw > 0
@@ -285,7 +288,13 @@ public class AnimCommon extends BaseAnimation {
 				
 				player.renderYawOffset = incrementAngleUntilGoal(player.renderYawOffset,
 																 player.rotationYaw + yaw,
-																 delta * 0.5f);
+																 delta * 0.35f);
+			}
+			
+			if (player.isEating()) {
+				player.renderYawOffset = Math.abs(player.renderYawOffset - player.rotationYaw) > 45 ? incrementAngleUntilGoal(player.renderYawOffset,
+																																player.rotationYaw,
+																																delta * 0.35f) : player.renderYawOffset;
 			}
 		}
 		

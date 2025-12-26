@@ -108,14 +108,14 @@ public abstract class ModelBipedMixin extends ModelBase {
 		GL11.glRotatef(prevXRotation, 1, 0, 0);
 		
 		if (customEntity.lmm_$isAnimation(AnimHighFalling.id)) GL11.glTranslatef(0, -prevOffset, 0);
-		else if (customEntity.lmm_$isAnimation(AnimClimbing.id)) {
+		else if (player.isOnLadder()) {
 			int x = MathHelper.floor_double(entity.posX);
 			int y = MathHelper.floor_double(entity.boundingBox.minY);
 			int z = MathHelper.floor_double(entity.posZ);
 			
 			World world = entity.worldObj;
 			int id = world.getBlockId(x, y, z);
-			if (Block.blocksList[id].isBlockClimbable(world, x, y, z)) {
+			if (id != 0 && Block.blocksList[id].isBlockClimbable(world, x, y, z) && id == BTWBlocks.ladder.blockID) {
 				int ladderMeta = world.getBlockMetadata(x, y, z);
 				
 				player.renderYawOffset = switch (ladderMeta) {
