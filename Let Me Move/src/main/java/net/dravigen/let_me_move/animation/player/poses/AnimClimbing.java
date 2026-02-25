@@ -42,6 +42,25 @@ public class AnimClimbing extends AnimCommon {
 		float[] rLeg = new float[]{0, 0, 0, -1.9f, 12, 0.1f};
 		float[] lLeg = new float[]{0, 0, 0, 1.9f, 12, 0.1f};
 		
+		int x = MathHelper.floor_double(entity.posX);
+		int y = MathHelper.floor_double(entity.boundingBox.minY);
+		int z = MathHelper.floor_double(entity.posZ);
+		
+		World world = entity.worldObj;
+		int id = world.getBlockId(x, y, z);
+		if (id != 0 && Block.blocksList[id].isBlockClimbable(world, x, y, z) && id == BTWBlocks.ladder.blockID) {
+			int ladderMeta = world.getBlockMetadata(x, y, z);
+			
+			float renderYawOffset = entity.renderYawOffset;
+			AnimationUtils.newRenderYaw = renderYawOffset + switch (ladderMeta) {
+				case 0 -> MathHelper.wrapAngleTo180_float(-renderYawOffset);
+				case 1 -> MathHelper.wrapAngleTo180_float(180 - renderYawOffset);
+				case 2 -> MathHelper.wrapAngleTo180_float(270 - renderYawOffset);
+				case 3 -> MathHelper.wrapAngleTo180_float(90 - renderYawOffset);
+				default -> renderYawOffset;
+			};
+		}
+		
 		rArm[0] = -pi(3, 5);
 		lArm[0] = -pi(3, 5);
 		
@@ -86,12 +105,7 @@ public class AnimClimbing extends AnimCommon {
 		
 		swingArm(model, body, rArm, lArm, head);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override

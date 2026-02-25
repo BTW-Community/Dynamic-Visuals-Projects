@@ -1,7 +1,5 @@
 package net.dravigen.let_me_see.mixin;
 
-import api.item.items.ProgressiveCraftingItem;
-import btw.item.items.FoodItem;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.let_me_see.LetMeSeeAddon;
@@ -23,9 +21,11 @@ public abstract class EntityRendererMixin {
 	@Unique
 	float jumpAngle = 0;
 	@Unique
-	float frowAngle = 0;
+	float forwAngle = 0;
 	@Unique
 	float prevYaw = 0;
+	@Unique
+	float lastTick = 0;
 	@Shadow
 	private Minecraft mc;
 	
@@ -53,23 +53,27 @@ public abstract class EntityRendererMixin {
 			
 			ItemStack heldItem = player.getHeldItem();
 			
-			boolean isEating = player.isEating() && heldItem != null && (heldItem.getItem() instanceof FoodItem ||
-					heldItem.getItem() instanceof ItemFood ||
-					heldItem.getItem() instanceof ItemPotion ||
-					heldItem.getItem() instanceof ProgressiveCraftingItem);
+			boolean isEating = player.isEating() &&
+					heldItem != null &&
+					(heldItem.getItem() instanceof ItemFood || heldItem.getItem() instanceof ItemPotion);
 			
 			float goal = (float) ((player.moveStrafing != 0 ? -1.5 * Math.pow(player.moveStrafing, 3) : 0) *
 					strafingMul +
-					1.5 * swingMul *
+					1.5 *
+							swingMul *
 							GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
 											   player.prevSwingProgress,
 											   player.swingProgress) +
-					(0.5 * (player.rotationYaw - prevYaw)) * cameraMul +
-					(isEating ? 1.5f * eatingMul * GeneralUtils.cos(player.ticksExisted) : 0));
+					(0.125 * (player.rotationYaw - prevYaw)) * cameraMul +
+					(isEating ? 0.5f * eatingMul * GeneralUtils.cos(player.ticksExisted) : 0));
 			
 			float factor = player.moveStrafing == 0 || player.rotationYaw - prevYaw == 0 ? 0.25f : 0.005f;
 			
-			prevYaw = player.rotationYaw;
+			if (this.mc.thePlayer.ticksExisted > lastTick) {
+				prevYaw = player.rotationYaw;
+			}
+			
+			lastTick = this.mc.thePlayer.ticksExisted;
 			
 			bobbing = MathHelper.clamp_float(incrementUntilGoal(bobbing, goal, delta * factor), -10, 10);
 			
@@ -96,14 +100,14 @@ public abstract class EntityRendererMixin {
 			float factor1 = still ? 0.2f : 0.04f;
 			float factor2 = 0.4f;
 			
-			frowAngle = MathHelper.clamp_float(incrementUntilGoal(frowAngle, goal, delta * factor1), -5, 10);
+			forwAngle = MathHelper.clamp_float(incrementUntilGoal(forwAngle, goal, delta * factor1), -5, 10);
 			jumpAngle = MathHelper.clamp_float(incrementUntilGoal(jumpAngle, jumpGoal, delta * factor2), -5, 8);
 			
 			float mul = (float) LMS_Settings.BOBBING_MULTIPLIER.getDouble();
 			float forwardMul = (float) LMS_Settings.FORWARD_MULTIPLIER.getDouble();
 			float jumpMul = (float) LMS_Settings.JUMP_MULTIPLIER.getDouble();
 			
-			GL11.glRotatef(angle * 2f * mul + frowAngle * forwardMul, x, y, z);
+			GL11.glRotatef(angle * 2f * mul + forwAngle * forwardMul, x, y, z);
 			GL11.glRotatef(jumpAngle * jumpMul, x, y, z);
 		}
 	}

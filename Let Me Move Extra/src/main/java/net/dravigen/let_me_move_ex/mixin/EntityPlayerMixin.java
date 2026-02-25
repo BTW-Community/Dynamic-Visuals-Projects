@@ -38,7 +38,7 @@ public abstract class EntityPlayerMixin extends EntityLivingBase {
 	private void updateAnimation(CallbackInfo ci) {
 		if (!AnimationUtils.extraIsPresent) return;
 		
-		this.setSize(0.6f, ((ICustomMovementEntity) this).lmm_$getAnimation().height);
+		this.setSize(this.isPlayerSleeping() ? 0.2f : 0.6f, ((ICustomMovementEntity) this).lmm_$getAnimation().height);
 	}
 	
 	@Inject(method = "moveEntityWithHeading", at = @At("HEAD"), cancellable = true)

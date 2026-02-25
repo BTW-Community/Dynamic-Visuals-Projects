@@ -10,7 +10,7 @@ import net.minecraft.src.*;
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.pi;
 
 public class AnimDashing extends AnimBaseAction {
-	public static final ResourceLocation id = new ResourceLocation("LMM", "dashing");
+	public static final ResourceLocation id = new ResourceLocation("LMMEx", "dashing");
 	private static int pressTime = 0;
 	
 	public AnimDashing() {
@@ -49,12 +49,11 @@ public class AnimDashing extends AnimBaseAction {
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) entity;
 		
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
-		//partHolder.resetAnimationRotationPoints();
 		
 		i = clampedI(i);
 		float straf = -GeneralUtils.getMovementComponents(entity)[1];
 		
-		entity.renderYawOffset = entity.rotationYawHead + 45 * straf;
+		AnimationUtils.newRenderYaw = entity.rotationYawHead + 45 * straf;
 		
 		float[] body = new float[]{0, 0, 0, 0, 12, 0};
 		float[] head = new float[]{j * (pi / 180.0f), i * (pi / 180.0f), 0, 0, 0, 0};
@@ -67,12 +66,7 @@ public class AnimDashing extends AnimBaseAction {
 		
 		this.hurt(h, entity, head, body, rArm, lArm, rLeg, lLeg);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override

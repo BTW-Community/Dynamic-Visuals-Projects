@@ -268,58 +268,9 @@ public class GeneralUtils {
 	/**
 	 * AI Stuff
 	 */
-	public static MovementType getRelativeMovement(EntityLivingBase player) {
-		double dx = player.posX - player.lastTickPosX;
-		double dz = player.posZ - player.lastTickPosZ;
-		
-		double magnitudeSq = (dx * dx) + (dz * dz);
-		
-		if (magnitudeSq < 0.0001) {
-			return MovementType.IDLE;
-		}
-		
-		double magnitude = Math.sqrt(magnitudeSq);
-		
-		float mx = (float) (dx / magnitude);
-		float mz = (float) (dz / magnitude);
-		
-		float yawRad = player.rotationYaw * (float) (Math.PI / 180.0F);
-		
-		float vx = -MathHelper.sin(yawRad);
-		float vx_right = MathHelper.cos(yawRad);
-		
-		float dotProduct = (mx * vx) + (mz * vx_right);
-		
-		
-		if (dotProduct > FORWARD_THRESHOLD) {
-			return MovementType.FORWARD;
-		}
-		
-		if (dotProduct < BACKWARD_THRESHOLD) {
-			return MovementType.BACKWARD;
-		}
-		
-		float vz_right = -vx;
-		
-		float strafeDotProduct = (mx * vx_right) + (mz * vz_right);
-		
-		if (strafeDotProduct > FORWARD_THRESHOLD || strafeDotProduct < BACKWARD_THRESHOLD) {
-			return MovementType.STRAFING;
-		}
-		
-		if (magnitudeSq > 0.005) {
-			return MovementType.MIXED;
-		}
-		
-		return MovementType.IDLE;
-	}
-	
-	/**
-	 * AI Stuff
-	 */
 	public static float[] getMovementComponents(EntityLivingBase player) {
-		double dx = player.posX - player.lastTickPosX;
-		double dz = player.posZ - player.lastTickPosZ;
+		double dx = player.posX - player.prevPosX;
+		double dz = player.posZ - player.prevPosZ;
 		
 		double magnitudeSq = (dx * dx) + (dz * dz);
 		

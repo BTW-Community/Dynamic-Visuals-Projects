@@ -28,8 +28,6 @@ public class AnimLowFalling extends AnimCommon {
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) entity;
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
 		
-		//partHolder.resetAnimationRotationPoints();
-		
 		i = clampedI(i);
 		
 		float v = h % 200 / 1.75f;
@@ -47,11 +45,6 @@ public class AnimLowFalling extends AnimCommon {
 		float[] rLeg = new float[]{-sin * 0.5f, 0, 0, -1.9f, 12, 0.1f};
 		float[] lLeg = new float[]{sin * 0.5f, 0, 0, 1.9f, 12, 0.1f};
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 }

@@ -11,7 +11,7 @@ import static net.dravigen.dranimation_lib.utils.GeneralUtils.pi;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.roll_key;
 
 public class AnimRolling extends AnimBaseAction {
-	public static final ResourceLocation id = new ResourceLocation("LMM", "rolling");
+	public static final ResourceLocation id = new ResourceLocation("LMMEx", "rolling");
 	
 	public AnimRolling() {
 		super(id, 0.8f, 1, true, 60, 25, true);
@@ -39,8 +39,6 @@ public class AnimRolling extends AnimBaseAction {
 			float u, float delta) {
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) entity;
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
-		
-		//partHolder.resetAnimationRotationPoints();
 		
 		float[] head = new float[]{0, 0, 0, 0, 0, 0};
 		float[] body = new float[]{0, 0, 0, 0, 12, 0};
@@ -76,12 +74,7 @@ public class AnimRolling extends AnimBaseAction {
 		
 		this.hurt(h, entity, head, body, rArm, lArm, rLeg, lLeg);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override

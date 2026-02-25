@@ -1,6 +1,7 @@
 package net.dravigen.dranimation_lib.utils;
 
 import net.dravigen.dranimation_lib.animation.BaseAnimation;
+import net.minecraft.src.Minecraft;
 import net.minecraft.src.ModelBiped;
 import net.minecraft.src.ModelRenderer;
 import net.minecraft.src.ResourceLocation;
@@ -17,6 +18,8 @@ public class AnimationUtils {
 	public static float delta = 1;
 	public static boolean extraIsPresent = false;
 	public static boolean serverHasLMM = false;
+	public static float prevRenderYaw = 0;
+	public static float newRenderYaw = 0;
 	
 	public static Map<ResourceLocation, BaseAnimation> getAnimationsMap() {
 		return animationsMap.entrySet()
@@ -38,31 +41,46 @@ public class AnimationUtils {
 	}
 	
 	public static void smoothRotateAll(float[] partHolder, float rotX, float rotY, float rotZ, float factor) {
-		smoothRotate(partHolder, AnimationUtils.type.X, rotX, factor);
-		smoothRotate(partHolder, AnimationUtils.type.Y, rotY, factor);
-		smoothRotate(partHolder, AnimationUtils.type.Z, rotZ, factor);
+		smoothRotate(partHolder, AnimationUtils.type.X, rotX);
+		smoothRotate(partHolder, AnimationUtils.type.Y, rotY);
+		smoothRotate(partHolder, AnimationUtils.type.Z, rotZ);
 	}
 	
 	public static void smoothRotateAll(float[] partHolder, float[] rots, float factorRot, float factorMove) {
-		smoothRotate(partHolder, type.X, rots[0], factorRot);
-		smoothRotate(partHolder, type.Y, rots[1], factorRot);
-		smoothRotate(partHolder, type.Z, rots[2], factorRot);
-		smoothRotate(partHolder, type.Xp, rots[3], factorMove);
-		smoothRotate(partHolder, type.Yp, rots[4], factorMove);
-		smoothRotate(partHolder, type.Zp, rots[5], factorMove);
+		smoothRotateAll(partHolder, rots, factorRot);
 	}
 	
 	
 	public static void smoothRotateAll(float[] partHolder, float[] rots, float factor) {
-		smoothRotate(partHolder, type.X, rots[0], factor);
-		smoothRotate(partHolder, type.Y, rots[1], factor);
-		smoothRotate(partHolder, type.Z, rots[2], factor);
-		smoothRotate(partHolder, type.Xp, rots[3], factor);
-		smoothRotate(partHolder, type.Yp, rots[4], factor);
-		smoothRotate(partHolder, type.Zp, rots[5], factor);
+		smoothRotate(partHolder, type.X, rots[0]);
+		smoothRotate(partHolder, type.Y, rots[1]);
+		smoothRotate(partHolder, type.Z, rots[2]);
+		smoothRotate(partHolder, type.Xp, rots[3]);
+		smoothRotate(partHolder, type.Yp, rots[4]);
+		smoothRotate(partHolder, type.Zp, rots[5]);
 	}
 	
-	public static void smoothRotate(float[] partHolder, AnimationUtils.type type, float rot, float factor) {
+	public static void rotateAll(ModelPartHolder partHolder, ModelBiped model, float[] head, float[] body, float[] rArm,
+			float[] lArm, float[] rLeg, float[] lLeg) {
+		AnimationUtils.smoothRotateAll(partHolder.getHead(), partHolder.prevHead, model.bipedHead, head);
+		AnimationUtils.smoothRotateAll(partHolder.getBody(), partHolder.prevBody, model.bipedBody, body);
+		AnimationUtils.smoothRotateAll(partHolder.getrArm(), partHolder.prevRArm, model.bipedRightArm, rArm);
+		AnimationUtils.smoothRotateAll(partHolder.getlArm(), partHolder.prevLArm, model.bipedLeftArm, lArm);
+		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), partHolder.prevRLeg, model.bipedRightLeg, rLeg);
+		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), partHolder.prevLLeg, model.bipedLeftLeg, lLeg);
+		
+	}
+	
+	public static void smoothRotateAll(float[] partHolder, float[] prevPartHolder, ModelRenderer part, float[] rots) {
+		smoothRotate(partHolder, prevPartHolder, part, type.X, rots[0]);
+		smoothRotate(partHolder, prevPartHolder, part, type.Y, rots[1]);
+		smoothRotate(partHolder, prevPartHolder, part, type.Z, rots[2]);
+		smoothRotate(partHolder, prevPartHolder, part, type.Xp, rots[3]);
+		smoothRotate(partHolder, prevPartHolder, part, type.Yp, rots[4]);
+		smoothRotate(partHolder, prevPartHolder, part, type.Zp, rots[5]);
+	}
+	
+	public static void smoothRotate(float[] partHolder, AnimationUtils.type type, float rot) {
 		switch (type) {
 			case X -> partHolder[0] = rot;
 			case Y -> partHolder[1] = rot;
@@ -73,8 +91,38 @@ public class AnimationUtils {
 		}
 	}
 	
+	public static void smoothRotate(float[] rots, float[] prevRots, ModelRenderer part, AnimationUtils.type type,
+			float rot) {
+		switch (type) {
+			case X -> {
+				prevRots[0] = part.rotateAngleX;
+				rots[0] = rot;
+			}
+			case Y -> {
+				prevRots[1] = part.rotateAngleY;
+				rots[1] = rot;
+			}
+			case Z -> {
+				prevRots[2] = part.rotateAngleZ;
+				rots[2] = rot;
+			}
+			case Xp -> {
+				prevRots[3] = part.rotationPointX;
+				rots[3] = rot;
+			}
+			case Yp -> {
+				prevRots[4] = part.rotationPointY;
+				rots[4] = rot;
+			}
+			case Zp -> {
+				prevRots[5] = part.rotationPointZ;
+				rots[5] = rot;
+			}
+		}
+	}
+	
 	public static void updateAnimationRotation(ModelPartHolder partHolder, ModelBiped model) {
-		float deltaTick = AnimationUtils.delta;
+		float deltaTick = Minecraft.getMinecraft().getTimer().renderPartialTicks * 0.75f;
 		
 		lerpModelPart(model.bipedHead, partHolder.head, partHolder.prevHead, deltaTick);
 		lerpModelPart(model.bipedBody, partHolder.body, partHolder.prevBody, deltaTick);
@@ -103,13 +151,13 @@ public class AnimationUtils {
 		renderer.rotationPointX = GeneralUtils.lerpF(delta, prev[3], targets[3]);
 		renderer.rotationPointY = GeneralUtils.lerpF(delta, prev[4], targets[4]);
 		renderer.rotationPointZ = GeneralUtils.lerpF(delta, prev[5], targets[5]);
-		
+		/*
 		prev[0] = renderer.rotateAngleX;
 		prev[1] = renderer.rotateAngleY;
 		prev[2] = renderer.rotateAngleZ;
 		prev[3] = renderer.rotationPointX;
 		prev[4] = renderer.rotationPointY;
-		prev[5] = renderer.rotationPointZ;
+		prev[5] = renderer.rotationPointZ;*/
 	}
 	
 	public static void offsetAllRotationPoints(float x, float y, float z, float[] head, float[] rArm, float[] lArm,

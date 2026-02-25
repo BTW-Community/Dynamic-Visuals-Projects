@@ -11,10 +11,15 @@ import net.dravigen.let_me_move_ex.animation.player.actions.AnimDiving;
 import net.dravigen.let_me_move_ex.animation.player.actions.AnimSwimming;
 import net.minecraft.src.*;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static net.dravigen.let_me_move.animation.AnimRegistry.CROUCHING;
+import static net.dravigen.let_me_move_ex.animation.AnimRegistry.CRAWLING;
+import static net.dravigen.let_me_move_ex.animation.AnimRegistry.DIVING;
 
 @Mixin(EntityPlayerSP.class)
 public abstract class EntityPlayerSPMixin extends AbstractClientPlayer {
@@ -22,6 +27,9 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer {
 	public EntityPlayerSPMixin(World par1World, String par2Str) {
 		super(par1World, par2Str);
 	}
+	
+	@Shadow
+	protected abstract boolean isBlockTranslucent(int par1, int par2, int par3);
 	
 	@Inject(method = "onLivingUpdate", at = @At(value = "HEAD"))
 	private void updateAnimation(CallbackInfo ci) {
@@ -48,9 +56,9 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer {
 		
 		ResourceLocation newID = new ResourceLocation("");
 		
-		if (!customPlayer.lmm_$getAnimation().hasCooldown() ||
+		if ((!customPlayer.lmm_$getAnimation().hasCooldown() ||
 				customPlayer.lmm_$getAnimation().hasCooldown() &&
-						customPlayer.lmm_$getCooldown(customPlayer.lmm_$getAnimationID()) > 0) {
+						customPlayer.lmm_$getCooldown(customPlayer.lmm_$getAnimationID()) > 0)) {
 			for (BaseAnimation animationb : AnimationUtils.getAnimationsMap().values()) {
 				if (!animationb.shouldActivateAnimation(this, this.boundingBox)) continue;
 				if (animationb.isGeneralConditonsMet(this, this.boundingBox)) {
@@ -69,36 +77,68 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer {
 													 this.boundingBox.minY + customPlayer.lmm_$getAnimation().height,
 													 this.boundingBox.maxZ);
 			
-			boolean noCollisionWithBlock = this.worldObj.getCollidingBoundingBoxes(this, bounds).isEmpty();
+			boolean noCollisionWithBlock = this.worldObj.getCollidingBlockBounds(bounds).isEmpty();
 			
 			if (!newID.equals(customPlayer.lmm_$getAnimationID())) {
 				BaseAnimation newAnimation = AnimationUtils.getAnimationFromID(newID);
 				float dHeight = newAnimation.height - customPlayer.lmm_$getAnimation().height;
 				
 				if (dHeight > 0) {
-					noCollisionWithBlock = this.worldObj.getCollidingBoundingBoxes(this, bounds.addCoord(0, dHeight, 0))
+					noCollisionWithBlock = this.worldObj.getCollidingBlockBounds(bounds.addCoord(0, dHeight, 0))
 							.isEmpty();
 				}
 				
 				if (noCollisionWithBlock) {
 					customPlayer.lmm_$setAnimation(newID);
 				}
-				else {
-					if (!GeneralUtils.isEntityHeadInsideBlock(this, 0.41)) {
-						customPlayer.lmm_$setAnimation(AnimCrouching.id);
-					}
-					else {
-						customPlayer.lmm_$setAnimation(AnimCrawling.id);
+				else if (!this.isPlayerSleeping()) {
+					if (this.worldObj.getCollidingBlockBounds(new AxisAlignedBB(this.boundingBox.minX,
+																				this.boundingBox.minY,
+																				this.boundingBox.minZ,
+																				this.boundingBox.maxX,
+																				this.boundingBox.minY + CRAWLING.height,
+																				this.boundingBox.maxZ)).isEmpty()) {
+						
+						if (this.worldObj.getCollidingBlockBounds(new AxisAlignedBB(this.boundingBox.minX,
+																					this.boundingBox.minY,
+																					this.boundingBox.minZ,
+																					this.boundingBox.maxX,
+																					this.boundingBox.minY +
+																							CROUCHING.height,
+																					this.boundingBox.maxZ)).isEmpty()) {
+							if (CROUCHING.isGeneralConditonsMet(this, this.boundingBox))
+								customPlayer.lmm_$setAnimation(AnimCrouching.id);
+						}
+						else {
+							if (CRAWLING.isGeneralConditonsMet(this, this.boundingBox))
+								customPlayer.lmm_$setAnimation(AnimCrawling.id);
+						}
 					}
 				}
 			}
-			else if (!this.worldObj.getCollidingBlockBounds(this.boundingBox.copy().contract(0.1, 0, 0.1)).isEmpty() &&
-					!GeneralUtils.isEntityFeetInsideBlock(this)) {
+			else if (!this.isPlayerSleeping() &&
+					!this.worldObj.getCollidingBlockBounds(new AxisAlignedBB(this.boundingBox.minX + 1 / 16d,
+																			 MathHelper.floor_double(this.boundingBox.maxY) -
+																					 0.2,
+																			 this.boundingBox.minZ + 1 / 16d,
+																			 this.boundingBox.maxX - 1 / 16d,
+																			 this.boundingBox.maxY,
+																			 this.boundingBox.maxZ - 1 / 16d))
+							.isEmpty() &&
+					!GeneralUtils.isEntityFeetInsideBlock(this) &&
+					this.worldObj.getCollidingBlockBounds(new AxisAlignedBB(this.boundingBox.minX,
+																			this.boundingBox.minY,
+																			this.boundingBox.minZ,
+																			this.boundingBox.maxX,
+																			this.boundingBox.minY + 0.8d,
+																			this.boundingBox.maxZ)).isEmpty()) {
 				if (this.capabilities.isFlying) {
-					customPlayer.lmm_$setAnimation(AnimDiving.id);
+					if (DIVING.isGeneralConditonsMet(this, this.boundingBox))
+						customPlayer.lmm_$setAnimation(AnimDiving.id);
 				}
 				else {
-					customPlayer.lmm_$setAnimation(AnimCrawling.id);
+					if (CRAWLING.isGeneralConditonsMet(this, this.boundingBox))
+						customPlayer.lmm_$setAnimation(AnimCrawling.id);
 				}
 			}
 		}
@@ -132,11 +172,23 @@ public abstract class EntityPlayerSPMixin extends AbstractClientPlayer {
 	
 	@Redirect(method = "pushOutOfBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/EntityPlayerSP;isBlockTranslucent(III)Z", ordinal = 0))
 	private boolean customCollisionOne(EntityPlayerSP instance, int par1, int par2, int par3) {
-		return !instance.worldObj.getCollidingBoundingBoxes(instance, instance.boundingBox).isEmpty();
+		AxisAlignedBB bb = instance.boundingBox;
+		
+		return (this.height > 1 &&
+				!instance.worldObj.getCollidingBoundingBoxes(instance,
+															 new AxisAlignedBB(bb.minX,
+																			   bb.minY + 1,
+																			   bb.minZ,
+																			   bb.maxX,
+																			   bb.maxY,
+																			   bb.maxZ)).isEmpty() &&
+				this.isBlockTranslucent(par1, MathHelper.floor_double(bb.maxY), par3) ||
+				this.isBlockTranslucent(par1, MathHelper.floor_double(bb.minY), par3));
 	}
 	
 	@Redirect(method = "pushOutOfBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/EntityPlayerSP;isBlockTranslucent(III)Z", ordinal = 1))
 	private boolean disableUselessCheck(EntityPlayerSP instance, int par1, int par2, int par3) {
 		return false;
+		//return this.isBlockTranslucent(par1, (int) (par2 - 1 + this.height - 0.1), par3);
 	}
 }

@@ -32,13 +32,16 @@ public abstract class ModelBipedMixin {
 	@Shadow
 	public ModelRenderer bipedLeftLeg;
 	
-	@Inject(method = "render", at = @At("HEAD"))
+	@Shadow
+	public boolean isSneak;
+	
+	@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/ModelBiped;setRotationAngles(FFFFFFLnet/minecraft/src/Entity;)V", shift = At.Shift.AFTER))
 	private void hideBasePart(Entity entity, float par2, float par3, float par4, float par5, float par6, float par7,
 			CallbackInfo ci) {
 		Minecraft mc = Minecraft.getMinecraft();
 		boolean isArmor = (Object) this instanceof PlayerArmorModel;
 		
-		if (!isArmor){
+		if (!isArmor) {
 			this.bipedHead.showModel = true;
 			this.bipedHeadwear.showModel = true;
 			this.bipedBody.showModel = true;
@@ -60,13 +63,13 @@ public abstract class ModelBipedMixin {
 		ItemStack helmet = mc.thePlayer.getCurrentArmor(3);
 		boolean hasHelmet = helmet != null && helmet.getItem() instanceof ItemArmor;
 		ItemStack chestplate = mc.thePlayer.getCurrentArmor(2);
-		boolean hasChest = chestplate != null && chestplate.getItem() instanceof ItemArmor ;
+		boolean hasChest = chestplate != null && chestplate.getItem() instanceof ItemArmor;
 		
 		if (isFirstPers) {
 			boolean isSliding = false;
 			
 			if (AddonHandler.isModInstalled("let_me_move_ex")) {
-				isSliding = ((ICustomMovementEntity) entity).lmm_$isAnimation(new ResourceLocation("LMM",
+				isSliding = ((ICustomMovementEntity) entity).lmm_$isAnimation(new ResourceLocation("LMMEx",
 																								   "wallSliding"));
 			}
 			
@@ -112,6 +115,12 @@ public abstract class ModelBipedMixin {
 			}
 		}
 		
+		if (mc.thePlayer.isPlayerSleeping()) {
+			this.bipedHead.showModel = false;
+			this.bipedHeadwear.showModel = false;
+		}
+		
 		this.bipedCloak.showModel = this.bipedBody.showModel;
 	}
 }
+

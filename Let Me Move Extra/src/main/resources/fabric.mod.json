@@ -31,6 +31,7 @@
   "depends": {
     "fabricloader": ">=0.14.19",
     "minecraft": "1.6.4",
-    "let_me_move": ">=1.0.0"
+    "let_me_move": ">=1.0.0-alpha",
+    "dranimation_lib": ">=1.0.0-alpha"
   }
 }

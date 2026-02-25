@@ -9,7 +9,7 @@ import net.minecraft.src.*;
 import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 
 public class AnimPullingUp extends AnimBaseAction {
-	public static final ResourceLocation id = new ResourceLocation("LMM", "pullingUp");
+	public static final ResourceLocation id = new ResourceLocation("LMMEx", "pullingUp");
 	private static double yBlockAboveWall;
 	private coords prevSide;
 	
@@ -53,7 +53,6 @@ public class AnimPullingUp extends AnimBaseAction {
 		int timeRendered = customEntity.lmm_$getTimeRendered();
 		
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
-		//partHolder.resetAnimationRotationPoints();
 		
 		i = clampedI(i);
 		
@@ -71,6 +70,18 @@ public class AnimPullingUp extends AnimBaseAction {
 		float[] lArm = new float[]{0, 0, 0, 5, 2, 0};
 		float[] rLeg = new float[]{0, 0, 0, -1.9f, 12, 0.1f};
 		float[] lLeg = new float[]{0, 0, 0, 1.9f, 12, 0.1f};
+		
+		coords side = getWallSide(entity, 0, entity.height);
+		
+		if (side != null) {
+			float renderYawOffset = entity.renderYawOffset;
+			AnimationUtils.newRenderYaw = renderYawOffset + switch (side) {
+				case NORTH -> MathHelper.wrapAngleTo180_float(180 - renderYawOffset);
+				case EAST -> MathHelper.wrapAngleTo180_float(270 - renderYawOffset);
+				case SOUTH -> MathHelper.wrapAngleTo180_float(-renderYawOffset);
+				case WEST -> MathHelper.wrapAngleTo180_float(90 - renderYawOffset);
+			};
+		}
 		
 		AnimationUtils.offsetAllRotationPoints(0, 0, -2, head, rArm, lArm, rLeg, lLeg, body);
 		
@@ -114,12 +125,7 @@ public class AnimPullingUp extends AnimBaseAction {
 		
 		hurt(h, entity, head, body, rArm, lArm, rLeg, lLeg);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override

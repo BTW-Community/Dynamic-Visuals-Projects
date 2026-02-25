@@ -12,14 +12,15 @@ public class LetMeSeeAddon extends BTWAddon {
 	
 	public static boolean isPlayerRenderedByFreeCam = false;
 	
-	public static boolean isIsCustomFirstPerson(Minecraft mc) {
-		return !isPlayerRenderedByFreeCam && LMS_Settings.FIRST_PERSON_MODEL.getBool() &&
-				mc.gameSettings.thirdPersonView == 0 &&
-				!(mc.currentScreen instanceof GuiContainerCreative || mc.currentScreen instanceof GuiInventory);
-	}
-	
 	public LetMeSeeAddon() {
 		super();
+	}
+	
+	public static boolean isIsCustomFirstPerson(Minecraft mc) {
+		return !isPlayerRenderedByFreeCam &&
+				LMS_Settings.FIRST_PERSON_MODEL.getBool() &&
+				mc.gameSettings.thirdPersonView == 0 &&
+				!(mc.currentScreen instanceof GuiContainerCreative || mc.currentScreen instanceof GuiInventory);
 	}
 	
 	@Override

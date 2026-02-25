@@ -10,7 +10,7 @@ import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.crawl_key;
 
 public class AnimSwimming extends AnimBaseAction {
-	public static final ResourceLocation id = new ResourceLocation("LMM", "swimming");
+	public static final ResourceLocation id = new ResourceLocation("LMMEx", "swimming");
 	
 	public AnimSwimming() {
 		super(id, 0.8f, 0.15f, true);
@@ -29,9 +29,7 @@ public class AnimSwimming extends AnimBaseAction {
 		boolean conditionA = isInsideWater(player) && crawl_key.pressed;
 		
 		boolean conditionB = (isInsideWater(player) && player.getLookVec().yCoord < 0.45 ||
-				isHeadInsideWater(player)) &&
-				(player.moveForward > 0 || player.moveStrafing != 0) &&
-				player.isUsingSpecialKey();
+				isHeadInsideWater(player)) && player.moveForward > 0 && player.isUsingSpecialKey();
 		
 		return !player.doesStatusPreventSprinting() &&
 				!player.isOnLadder() &&
@@ -205,12 +203,7 @@ public class AnimSwimming extends AnimBaseAction {
 		
 		this.hurt(h, entity, head, body, rArm, lArm, rLeg, lLeg);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override
@@ -306,7 +299,7 @@ public class AnimSwimming extends AnimBaseAction {
 	
 	@Override
 	public boolean customBodyHeadRotation(EntityLivingBase entity) {
-		return entity.moveForward != 0 || entity.moveStrafing != 0;
+		return false;
 	}
 	
 	private boolean canFastSwimInWater(EntityPlayer player) {

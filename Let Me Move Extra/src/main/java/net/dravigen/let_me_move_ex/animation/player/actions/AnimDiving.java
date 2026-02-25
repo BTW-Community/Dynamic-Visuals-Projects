@@ -10,7 +10,7 @@ import static net.dravigen.dranimation_lib.utils.GeneralUtils.*;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.crawl_key;
 
 public class AnimDiving extends AnimBaseAction {
-	public static ResourceLocation id = new ResourceLocation("LMM", "diving");
+	public static ResourceLocation id = new ResourceLocation("LMMEx", "diving");
 	
 	public AnimDiving() {
 		super(id, 0.8f, 0.005f, true);
@@ -39,7 +39,6 @@ public class AnimDiving extends AnimBaseAction {
 		float leaningPitch = Math.min(1.0F, n);
 		
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
-		//partHolder.resetAnimationRotationPoints();
 		
 		i = clampedI(i);
 		
@@ -70,6 +69,7 @@ public class AnimDiving extends AnimBaseAction {
 				2,
 				0
 		};
+		
 		float[] rLeg = new float[]{-1f + n / 2, 0, 0, -1.9f, 12, 0.1f};
 		float[] lLeg = new float[]{-1f + n / 2, 0, 0, 1.9f, 12, 0.1f};
 		
@@ -77,21 +77,12 @@ public class AnimDiving extends AnimBaseAction {
 		
 		this.hurt(h, entity, head, body, rArm, lArm, rLeg, lLeg);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.8f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.8f * delta);
-		
-		
 		if (leaningPitch > 0.0F) {
-			AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.8f * delta);
-			AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.8f * delta);
-			
-			
 			rLeg[4] = 11.3f;
 			lLeg[4] = 11.3f;
-			
-			AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.8f * delta);
-			AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.8f * delta);
 		}
+		
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override

@@ -30,7 +30,7 @@ public abstract class RenderPlayerMixin extends RendererLivingEntity {
 		Minecraft mc = Minecraft.getMinecraft();
 		
 		if (player == mc.thePlayer && LetMeSeeAddon.isIsCustomFirstPerson(mc)) return;
-	
+		
 		instance.func_82393_a(v, par1, par2, par3, par4, par5, par6);
 	}
 	
@@ -64,9 +64,7 @@ public abstract class RenderPlayerMixin extends RendererLivingEntity {
 	private void offsetPlayerIn1stPerson(AbstractClientPlayer entity, float par2, float par3, float par4,
 			CallbackInfo ci) {
 		Minecraft mc = Minecraft.getMinecraft();
-		if (LetMeSeeAddon.isIsCustomFirstPerson(mc) &&
-				entity == mc.thePlayer &&
-				entity.height >= 1.4f) {
+		if (LetMeSeeAddon.isIsCustomFirstPerson(mc) && entity == mc.thePlayer && entity.height >= 1.4f) {
 			float v = (float) (4f * LMS_Settings.HEAD_OFFSET.getDouble());
 			
 			float i = entity.rotationYaw % 360 / 90 * GeneralUtils.pi / 2;

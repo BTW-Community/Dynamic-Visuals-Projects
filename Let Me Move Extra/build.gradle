@@ -69,8 +69,8 @@ dependencies {
 
     implementation 'com.typesafe:config:1.4.5'
 
-    implementation files('libs/dranimation_lib-1.0.0-dev.jar')
-	implementation files('libs/let_me_move-1.0.0-dev.jar')
+    implementation files('libs/dranimation_lib-1.0.0-alpha-dev.jar')
+	implementation files('libs/let_me_move-1.0.0-alpha-dev.jar')
 }
 
 configurations.all {

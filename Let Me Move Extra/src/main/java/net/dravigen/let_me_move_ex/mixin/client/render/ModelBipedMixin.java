@@ -1,16 +1,13 @@
 package net.dravigen.let_me_move_ex.mixin.client.render;
 
-import btw.block.BTWBlocks;
 import btw.entity.model.PlayerArmorModel;
 import net.dravigen.dranimation_lib.animation.BaseAnimation;
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.GeneralUtils;
-import net.dravigen.let_me_move.animation.player.poses.AnimClimbing;
+import net.dravigen.let_me_move.LetMeMoveAddon;
 import net.dravigen.let_me_move.animation.player.poses.AnimHighFalling;
 import net.dravigen.let_me_move_ex.animation.player.actions.AnimCrawling;
-import net.dravigen.let_me_move_ex.animation.player.actions.AnimPullingUp;
-import net.dravigen.let_me_move_ex.animation.player.actions.AnimWallSliding;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,28 +26,7 @@ public abstract class ModelBipedMixin extends ModelBase {
 		
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) player;
 		
-		{
-			if (player != Minecraft.getMinecraft().thePlayer) {
-				if (!entity.isRiding() && !entity.inWater) {
-					boolean onGround = player.worldObj.checkBlockCollision(player.boundingBox.copy().offset(0, -0.001f, 0));
-					
-					if (customEntity.lmm_$getOnGround() && !onGround) {
-						customEntity.lmm_$setJumpSwing();
-					}
-					customEntity.lmm_$setOnGround(onGround);
-				}
-				else {
-					customEntity.lmm_$setOnGround(true);
-				}
-			}
-		}
-		
-		if (!customEntity.lmm_$getOnGround() && !customEntity.lmm_$getIsFlying() && !this.isRiding) {
-			customEntity.lmm_$setJumpTime(customEntity.lmm_$getJumpTime() + 1);
-		}
-		else {
-			customEntity.lmm_$setJumpTime(0);
-		}
+		LetMeMoveAddon.updateModelInfo(entity, player, customEntity, (ModelBiped) (Object) this);
 		
 		BaseAnimation animation = customEntity.lmm_$getAnimation();
 		
@@ -108,44 +84,5 @@ public abstract class ModelBipedMixin extends ModelBase {
 		GL11.glRotatef(prevXRotation, 1, 0, 0);
 		
 		if (customEntity.lmm_$isAnimation(AnimHighFalling.id)) GL11.glTranslatef(0, -prevOffset, 0);
-		else if (customEntity.lmm_$isAnimation(AnimWallSliding.id)) {
-			GeneralUtils.coords side = GeneralUtils.getWallSide(player, 0, entity.height);
-			
-			if (side != null) {
-				player.renderYawOffset = side == GeneralUtils.coords.EAST
-										 ? 45
-										 : side == GeneralUtils.coords.SOUTH
-										   ? 135
-										   : side == GeneralUtils.coords.WEST ? 225 : 315;
-			}
-		}
-		else if (customEntity.lmm_$isAnimation(AnimPullingUp.id)) {
-			GeneralUtils.coords side = GeneralUtils.getWallSide(player, 0, entity.height);
-			
-			if (side != null) {
-				player.renderYawOffset = side == GeneralUtils.coords.EAST
-										 ? 270
-										 : side == GeneralUtils.coords.SOUTH
-										   ? 0
-										   : side == GeneralUtils.coords.WEST ? 90 : 180;
-			}
-		}
-		else if (customEntity.lmm_$isAnimation(AnimClimbing.id)) {
-			int x = MathHelper.floor_double(entity.posX);
-			int y = MathHelper.floor_double(entity.boundingBox.minY);
-			int z = MathHelper.floor_double(entity.posZ);
-			
-			if (entity.worldObj.getBlockId(x, y, z) == BTWBlocks.ladder.blockID) {
-				int ladderMeta = entity.worldObj.getBlockMetadata(x, y, z);
-				
-				player.renderYawOffset = switch (ladderMeta) {
-					case 0 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 0, 1);
-					case 1 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 180, 1);
-					case 2 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 270, 1);
-					case 3 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 90, 1);
-					default -> player.renderYawOffset;
-				};
-			}
-		}
 	}
 }

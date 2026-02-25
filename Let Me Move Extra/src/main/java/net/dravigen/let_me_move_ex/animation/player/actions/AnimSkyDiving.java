@@ -10,7 +10,7 @@ import static net.dravigen.dranimation_lib.utils.GeneralUtils.pi;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.crawl_key;
 
 public class AnimSkyDiving extends AnimBaseAction {
-	public static final ResourceLocation id = new ResourceLocation("LMM", "skyDiving");
+	public static final ResourceLocation id = new ResourceLocation("LMMEx", "skyDiving");
 	
 	public AnimSkyDiving() {
 		super(id, 1f, 0.2f, true);
@@ -39,8 +39,6 @@ public class AnimSkyDiving extends AnimBaseAction {
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) entity;
 		ModelPartHolder partHolder = customEntity.lmm_$getParHolder();
 		
-		//partHolder.resetAnimationRotationPoints();
-		
 		boolean fMove = entity.moveForward > 0;
 		
 		i = clampedI(i);
@@ -56,12 +54,7 @@ public class AnimSkyDiving extends AnimBaseAction {
 		
 		this.hurt(h, entity, head, body, rArm, lArm, rLeg, lLeg);
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override

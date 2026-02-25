@@ -10,7 +10,7 @@ import static net.dravigen.dranimation_lib.utils.GeneralUtils.isInsideWater;
 import static net.dravigen.let_me_move_ex.LetMeMoveExAddon.crawl_key;
 
 public class AnimCrawling extends AnimSwimming {
-	public static final ResourceLocation id = new ResourceLocation("LMM", "crawling");
+	public static final ResourceLocation id = new ResourceLocation("LMMEx", "crawling");
 	
 	public AnimCrawling() {
 		super(id);

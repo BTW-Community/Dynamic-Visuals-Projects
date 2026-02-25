@@ -8,6 +8,8 @@ import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
 import net.dravigen.let_me_move.LetMeMoveAddon;
 import net.dravigen.let_me_move.animation.player.poses.AnimStanding;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.src.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -273,12 +275,23 @@ public abstract class EntityLivingBaseMixin extends Entity implements ICustomMov
 		return this.prevLimbSwing;
 	}
 	
+	@Environment(EnvType.CLIENT)
 	@Redirect(method = "onUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/EntityLivingBase;func_110146_f(FF)F"))
 	private float disableHeadTurn(EntityLivingBase instance, float par1, float par2) {
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) instance;
 		
+		if (customEntity.lmm_$getAnimationID() == null) return this.func_110146_f(par1, par2);
+		
 		if (instance instanceof EntityPlayer player) {
-			if (!customEntity.lmm_$getAnimation().customBodyHeadRotation(instance)) {
+			boolean isMoving = player.moveForward != 0 || player.moveStrafing != 0;
+			Minecraft mc = Minecraft.getMinecraft();
+			boolean isFirstPerson = !customEntity.lmm_$getAnimationID().getResourceDomain().equals("LMMEx") &&
+					player == mc.thePlayer &&
+					mc.gameSettings.thirdPersonView == 0;
+			
+			boolean customHeadMove = customEntity.lmm_$getAnimation().customBodyHeadRotation(instance);
+			
+			if (isFirstPerson || !customHeadMove) {
 				if (this.isRiding()) {
 					float var4 = MathHelper.wrapAngleTo180_float(this.rotationYaw - this.renderYawOffset);
 					
@@ -290,25 +303,32 @@ public abstract class EntityLivingBaseMixin extends Entity implements ICustomMov
 					}
 				}
 				else {
-					float var3 = MathHelper.wrapAngleTo180_float(par1 - this.renderYawOffset);
-					this.renderYawOffset += var3 * 0.3f;
-					float var4 = MathHelper.wrapAngleTo180_float(this.rotationYaw - this.renderYawOffset);
-					boolean var5 = var4 < -90.0f || var4 >= 90.0f;
+					float v1 = isFirstPerson ? 45.0f : 90.0f;
 					
-					if (var4 < -75.0f) {
-						var4 = -75.0f;
+					if (player.moveForward < 0 && player.moveStrafing == 0 && isFirstPerson) {
+						this.renderYawOffset = this.rotationYaw;
 					}
-					if (var4 >= 75.0f) {
-						var4 = 75.0f;
-					}
-					
-					this.renderYawOffset = this.rotationYaw - var4;
-					
-					if (var4 * var4 > 75 * 75) {
-						this.renderYawOffset += var4;
-					}
-					if (var5) {
-						par2 *= -1.0f;
+					else {
+						float var3 = MathHelper.wrapAngleTo180_float(par1 - this.renderYawOffset);
+						this.renderYawOffset += var3 * 0.3f;
+						float var4 = MathHelper.wrapAngleTo180_float(this.rotationYaw - this.renderYawOffset);
+						boolean var5 = var4 < -v1 || var4 >= v1;
+						
+						if (var4 < -v1) {
+							var4 = -v1;
+						}
+						if (var4 >= v1) {
+							var4 = v1;
+						}
+						
+						this.renderYawOffset = this.rotationYaw - var4;
+						
+						if (var4 * var4 > v1 * v1) {
+							this.renderYawOffset += var4;
+						}
+						if (var5) {
+							par2 *= -1.0f;
+						}
 					}
 				}
 			}

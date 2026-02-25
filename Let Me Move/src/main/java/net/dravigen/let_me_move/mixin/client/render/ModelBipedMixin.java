@@ -1,13 +1,11 @@
 package net.dravigen.let_me_move.mixin.client.render;
 
-import btw.block.BTWBlocks;
 import btw.entity.model.PlayerArmorModel;
 import net.dravigen.dranimation_lib.animation.BaseAnimation;
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
 import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.let_me_move.LetMeMoveAddon;
-import net.dravigen.let_me_move.animation.player.poses.AnimClimbing;
 import net.dravigen.let_me_move.animation.player.poses.AnimHighFalling;
 import net.minecraft.src.*;
 import org.lwjgl.opengl.GL11;
@@ -31,29 +29,7 @@ public abstract class ModelBipedMixin extends ModelBase {
 		
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) player;
 		
-		{
-			if (player != Minecraft.getMinecraft().thePlayer) {
-				if (!entity.isRiding() && !entity.inWater) {
-					boolean onGround = player.worldObj.checkBlockCollision(player.boundingBox.copy().offset(0, -0.001f, 0));
-					
-					if (customEntity.lmm_$getOnGround() && !onGround) {
-						customEntity.lmm_$setJumpSwing();
-					}
-					customEntity.lmm_$setOnGround(onGround);
-				}
-				else {
-					customEntity.lmm_$setOnGround(true);
-				}
-			}
-		}
-		
-		
-		if (!customEntity.lmm_$getOnGround() && !customEntity.lmm_$getIsFlying() && !this.isRiding) {
-			customEntity.lmm_$setJumpTime(customEntity.lmm_$getJumpTime() + 1);
-		}
-		else {
-			customEntity.lmm_$setJumpTime(0);
-		}
+		LetMeMoveAddon.updateModelInfo(entity, player, customEntity, (ModelBiped) (Object) this);
 		
 		BaseAnimation animation = customEntity.lmm_$getAnimation();
 		
@@ -97,7 +73,6 @@ public abstract class ModelBipedMixin extends ModelBase {
 			prevXRotation = GeneralUtils.incrementAngleUntilGoal(renderRotOff[1], 0, 0.75f * delta);
 		}
 		
-		
 		float[] newRenderRotOff = new float[]{prevOffset, prevXRotation, prevYRotation, prevZRotation};
 		
 		customEntity.lmm_$setRenderRotOff(newRenderRotOff);
@@ -108,25 +83,6 @@ public abstract class ModelBipedMixin extends ModelBase {
 		GL11.glRotatef(prevXRotation, 1, 0, 0);
 		
 		if (customEntity.lmm_$isAnimation(AnimHighFalling.id)) GL11.glTranslatef(0, -prevOffset, 0);
-		else if (player.isOnLadder()) {
-			int x = MathHelper.floor_double(entity.posX);
-			int y = MathHelper.floor_double(entity.boundingBox.minY);
-			int z = MathHelper.floor_double(entity.posZ);
-			
-			World world = entity.worldObj;
-			int id = world.getBlockId(x, y, z);
-			if (id != 0 && Block.blocksList[id].isBlockClimbable(world, x, y, z) && id == BTWBlocks.ladder.blockID) {
-				int ladderMeta = world.getBlockMetadata(x, y, z);
-				
-				player.renderYawOffset = switch (ladderMeta) {
-					case 0 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 0, 1);
-					case 1 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 180, 1);
-					case 2 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 270, 1);
-					case 3 -> GeneralUtils.incrementAngleUntilGoal(player.renderYawOffset, 90, 1);
-					default -> player.renderYawOffset;
-				};
-			}
-		}
 	}
 	
 	@ModifyArg(method = "<init>(FFII)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/src/ModelRenderer;addBox(FFFIIIF)V", ordinal = 4), index = 1)
@@ -149,26 +105,44 @@ public abstract class ModelBipedMixin extends ModelBase {
 		
 		if (entity instanceof EntityPlayer player) {
 			Minecraft mc = Minecraft.getMinecraft();
-			if (player != mc.thePlayer) {
-				if (LetMeMoveAddon.serverHasLetMeMove()) {
-					f = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
-										   customEntity.lmm_$getPrevLimbSwing()[0],
-										   customEntity.lmm_$getLimbSwing()[0]);
-					g = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
-										   customEntity.lmm_$getPrevLimbSwing()[1],
-										   customEntity.lmm_$getLimbSwing()[1]);
-					customEntity.lmm_$setPrevLimbSwing(new float[]{f, g});
+			
+			if (mc.thePlayer.ticksExisted > LetMeMoveAddon.prevTick) {
+				if (player != mc.thePlayer) {
+					if (LetMeMoveAddon.serverHasLetMeMove()) {
+						f = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
+											   customEntity.lmm_$getPrevLimbSwing()[0],
+											   customEntity.lmm_$getLimbSwing()[0]);
+						g = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks,
+											   customEntity.lmm_$getPrevLimbSwing()[1],
+											   customEntity.lmm_$getLimbSwing()[1]);
+						customEntity.lmm_$setPrevLimbSwing(new float[]{f, g});
+					}
 				}
+				else {
+					customEntity.lmm_$setLimbSwing(new float[]{f, g});
+				}
+				
+				AnimationUtils.prevRenderYaw = player.renderYawOffset;
+				
+				customEntity.lmm_$getAnimation()
+						.renderAnimation((ModelBiped) (Object) this, player, f, g, h, i, j, u, AnimationUtils.delta);
+				LetMeMoveAddon.prevTick = mc.thePlayer.ticksExisted;
 			}
-			else {
-				customEntity.lmm_$setLimbSwing(new float[]{f, g});
-			}
-			
-			
-			customEntity.lmm_$getAnimation()
-					.renderAnimation((ModelBiped) (Object) this, player, f, g, h, i, j, u, AnimationUtils.delta);
 			
 			AnimationUtils.updateAnimationRotation(customEntity.lmm_$getParHolder(), (ModelBiped) (Object) this);
+			
+			boolean isFirstPerson = !customEntity.lmm_$getAnimationID().getResourceDomain().equals("LMMEx") &&
+					player == mc.thePlayer &&
+					mc.gameSettings.thirdPersonView == 0;
+			
+			if (!isFirstPerson && customEntity.lmm_$getAnimation().customBodyHeadRotation(player)) {
+				if (player == mc.thePlayer) {
+					player.prevRenderYawOffset = player.renderYawOffset;
+					player.renderYawOffset = GeneralUtils.lerpF(mc.getTimer().renderPartialTicks * 0.3f,
+																AnimationUtils.prevRenderYaw,
+																AnimationUtils.newRenderYaw);
+				}
+			}
 			
 			if (player.getCurrentItemOrArmor(3) == null) {
 				this.bipedCloak.rotationPointZ = 0.0F;

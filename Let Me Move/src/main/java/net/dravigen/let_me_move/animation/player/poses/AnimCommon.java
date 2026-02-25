@@ -1,11 +1,9 @@
 package net.dravigen.let_me_move.animation.player.poses;
 
 import api.item.items.ProgressiveCraftingItem;
-import btw.item.items.FoodItem;
 import net.dravigen.dranimation_lib.animation.BaseAnimation;
 import net.dravigen.dranimation_lib.interfaces.ICustomMovementEntity;
 import net.dravigen.dranimation_lib.utils.AnimationUtils;
-import net.dravigen.dranimation_lib.utils.GeneralUtils;
 import net.dravigen.dranimation_lib.utils.ModelPartHolder;
 import net.minecraft.src.*;
 
@@ -57,14 +55,25 @@ public class AnimCommon extends BaseAnimation {
 		return i;
 	}
 	
+	private static boolean isEntityJumping(EntityPlayer player, ICustomMovementEntity customEntity) {
+		boolean isClient = player == Minecraft.getMinecraft().thePlayer;
+		double motionY = isClient ? player.motionY : player.posY - player.prevPosY;
+		
+		return !player.isRiding() &&
+				player.fallDistance < 3 &&
+				!player.inWater &&
+				!(motionY < 0 && customEntity.lmm_$getJumpTime() < 5) &&
+				!customEntity.lmm_$getIsFlying() &&
+				!customEntity.lmm_$getOnGround() &&
+				customEntity.lmm_$getJumpTime() > 0;
+	}
+	
 	protected void eatFood(float h, EntityLivingBase player, float[] head, float[] rArm) {
 		ItemStack heldItem = player.getHeldItem();
 		
-		if (heldItem == null ||
-				!(heldItem.getItem() instanceof ItemFood ||
-						heldItem.getItem() instanceof ItemPotion ||
-						heldItem.getItem() instanceof ProgressiveCraftingItem)) return;
-	
+		if (heldItem == null || !(heldItem.getItem() instanceof ItemFood || heldItem.getItem() instanceof ItemPotion))
+			return;
+		
 		if (player.isEating()) {
 			head[0] += sin(h * 2) * pi(1, 32);
 			head[2] += sin(h) * pi(1, 16);
@@ -93,6 +102,7 @@ public class AnimCommon extends BaseAnimation {
 	
 	protected void swingArm(ModelBiped model, float[] body, float[] rArm, float[] lArm, float[] head) {
 		float onGround = model.onGround;
+		
 		if (!(onGround <= 0.0F)) {
 			onGround *= 1f;
 			float v2 = 2f;
@@ -199,12 +209,7 @@ public class AnimCommon extends BaseAnimation {
 	@Override
 	public String getName(EntityPlayer player) {
 		ICustomMovementEntity customEntity = (ICustomMovementEntity) player;
-		
-		if (!player.inWater &&
-				!customEntity.lmm_$getIsFlying() &&
-				!player.isRiding() &&
-				!customEntity.lmm_$getOnGround() &&
-				customEntity.lmm_$getJumpTime() > 0) {
+		if (isEntityJumping(player, customEntity)) {
 			return StatCollector.translateToLocal("LMM.animation.jumping");
 		}
 		
@@ -248,25 +253,35 @@ public class AnimCommon extends BaseAnimation {
 		boolean isClient = player == mcPlayer;
 		
 		boolean isFloating = player.inWater && !player.onGround;
-		double motionY = isClient ? mcPlayer.motionY : player.posY - player.lastTickPosY;
-		boolean isJumping = customEntity.lmm_$getJumpTime() > 0 && !player.inWater;
+		double motionY = isClient ? mcPlayer.motionY : player.posY - player.prevPosY;
+		boolean isJumping = isEntityJumping(player, customEntity);
 		boolean isCrouching = model.isSneak || customEntity.lmm_$isAnimation(AnimCrouching.id);
-		boolean isFlying = isClient ? mcPlayer.capabilities.isFlying : customEntity.lmm_$getIsFlying() && !player.isRiding();
-		float forw = isClient ? mcPlayer.moveForward : GeneralUtils.getMovementComponents(player)[0];
-		float straf = isClient ? mcPlayer.moveStrafing : GeneralUtils.getMovementComponents(player)[1];
+		boolean isFlying = isClient
+						   ? mcPlayer.capabilities.isFlying
+						   : customEntity.lmm_$getIsFlying() && !player.isRiding();
+		float forw = isClient ? mcPlayer.moveForward : getMovementComponents(player)[0];
+		float straf = isClient ? mcPlayer.moveStrafing : 0;
 		
+		/*
 		if (!isClient) {
-			forw = forw > 0 ? forw < 0.2 ? 0 : forw : forw > -0.2 ? 0 : forw;
-			straf = straf > 0 ? straf < 0.2 ? 0 : straf : straf > -0.2 ? 0 : straf;
-		}
+			if (forw == 0 && straf == 0) {
+				forw = g;
+			}
+			else {
+				forw = forw > 0 ? forw < 0.2 ? 0 : forw : forw > -0.2 ? 0 : forw;
+				straf = straf > 0 ? straf < 0.2 ? 0 : straf : straf > -0.2 ? 0 : straf;
+			}
+		}*/
 		
 		boolean bSprint = player.isSprinting();
-		boolean backward = isClient ? forw < 0 : GeneralUtils.getRelativeMovement(player) == MovementType.BACKWARD && straf == 0;
+		boolean backward = forw < 0 && straf == 0;
 		int jumpSwing = customEntity.lmm_$getJumpSwing();
-		boolean isMoving = isClient ? mcPlayer.moveForward != 0 || mcPlayer.moveStrafing != 0 : g > 0.01;
+		boolean isMoving = isClient ? (mcPlayer.moveForward != 0 || mcPlayer.moveStrafing != 0) : forw != 0;
+		boolean isFirstPerson = isClient && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0;
 		
-		if (isClient && !entity.isRiding()) {
-			float yaw;
+		if (!isFirstPerson && isClient && !entity.isRiding()) {
+			float renderYawOffset = entity.renderYawOffset;
+			float yaw = renderYawOffset;
 			
 			if (isFlying) {
 				yaw = forw > 0
@@ -274,10 +289,7 @@ public class AnimCommon extends BaseAnimation {
 					  : forw == 0
 						? (straf > 0 ? -90 : straf < 0 ? 90 : 0)
 						: forw < 0 ? (straf > 0 ? 45 : straf < 0 ? -45 : 0) : 0;
-				
-				entity.renderYawOffset = incrementAngleUntilGoal(entity.renderYawOffset,
-																 entity.rotationYaw + yaw,
-																 delta * 0.35f);
+				yaw += entity.rotationYaw;
 			}
 			else if (isMoving) {
 				yaw = forw > 0
@@ -285,311 +297,314 @@ public class AnimCommon extends BaseAnimation {
 					  : forw == 0
 						? (straf > 0 ? -90 : straf < 0 ? 90 : 0)
 						: forw < 0 ? (straf > 0 ? -135 : straf < 0 ? 135 : 0) : 0;
-				
-				player.renderYawOffset = incrementAngleUntilGoal(player.renderYawOffset,
-																 player.rotationYaw + yaw,
-																 delta * 0.35f);
+				yaw += entity.rotationYaw;
 			}
 			
 			if (player.isEating()) {
-				player.renderYawOffset = Math.abs(player.renderYawOffset - player.rotationYaw) > 45 ? incrementAngleUntilGoal(player.renderYawOffset,
-																																player.rotationYaw,
-																																delta * 0.35f) : player.renderYawOffset;
+				yaw = Math.abs(player.renderYawOffset - player.rotationYaw) > 45
+					  ? player.rotationYaw
+					  : player.renderYawOffset;
 			}
+			
+			AnimationUtils.newRenderYaw = renderYawOffset + MathHelper.wrapAngleTo180_float(yaw - renderYawOffset);
 		}
 		
 		float mul = bSprint ? 0.525f : 0.5f;
 		
-		if (model.isRiding) {
-			Entity mount = entity.ridingEntity;
-			
-			if (mount instanceof EntityMinecart minecart) {
+		if (!player.isPlayerSleeping()) {
+			if (model.isRiding) {
+				Entity mount = entity.ridingEntity;
 				
-				rLeg[4] = 4;
-				lLeg[4] = 4;
-				rLeg[5] = -6;
-				lLeg[5] = -6;
-				AnimationUtils.offsetAllRotationPoints(0, 0, 5, head, rArm, lArm, rLeg, lLeg, body);
-				rArm[0] -= pi(2, 5);
-				lArm[0] -= pi(2, 5);
-				rArm[1] -= pi(1, 8);
-				lArm[1] += pi(1, 8);
-				rLeg[0] = -pi(1, 8);
-				lLeg[0] = -pi(1, 8);
-			}
-			else {
-				
-				rArm[0] -= 0.62831855f;
-				lArm[0] -= 0.62831855f;
-				rLeg[0] -= 1.2566371f;
-				lLeg[0] -= 1.2566371f;
-				rLeg[1] += 0.31415927f;
-				lLeg[1] -= 0.31415927f;
-			}
-		}
-		else if (!player.isPlayerSleeping()) {
-			if (isFlying) {
-				backward = forw < 0;
-				
-				mul = motionY < 0 ? (float) -(motionY * 32) : motionY > 0 ? 0 : 1;
-				
-				rArm[2] = pi(1, 48) * mul;
-				lArm[2] = -pi(1, 48) * mul;
-				rLeg[2] = pi(1, 128);
-				lLeg[2] = -pi(1, 128);
-				
-				if (isMoving) {
-					g *= backward ? -1 : 1;
+				if (mount instanceof EntityMinecart minecart) {
 					
-					head[0] += -g * pi(1, 12);
-					rArm[2] += pi(1, 16);
-					lArm[2] -= pi(1, 16);
-					rArm[0] = g * pi(1, 4);
-					lArm[0] = g * pi(1, 4);
-					rLeg[0] = g * pi(1, 4);
-					lLeg[0] = g * pi(1, 4);
-					rLeg[2] += pi(1, 64);
-					lLeg[2] -= pi(1, 64);
-					
-				}
-				
-				head[0] += sin(h / 8) * pi(1, 80);
-				
-				rArm[0] += (sin(h / 18f)) * pi(1, 16);
-				lArm[0] += -(sin(h / (14f))) * pi(1, 16);
-				rLeg[0] += (cos(h / 6f)) * pi(1, 16);
-				lLeg[0] += (cos(h / 6f + pi)) * pi(1, 16);
-				
-				rArm[2] += (cos(h / 10f - pi(1, 4)) + 1) * pi(1, (int) (12 + 40 * Math.abs(motionY)));
-				lArm[2] += -(cos(h / (10f) - pi(1, 4)) + 1) * pi(1, (int) (12 + 40 * Math.abs(motionY)));
-				rLeg[2] += (cos(h / 10f - pi(1, 6)) + 1) * pi(1, 128);
-				lLeg[2] += -(cos(h / (10f) - pi(1, 6)) + 1) * pi(1, 128);
-				
-				float v = sin(h / 10) * 1.25f;
-				head[4] += v;
-				body[4] += v;
-				rArm[4] += v;
-				lArm[4] += v;
-				rLeg[4] += v;
-				lLeg[4] += v;
-				
-				if (forw > 0 || straf != 0 && !(forw < 0)) {
-					rLeg[4] -= 2 * g;
-					rLeg[5] -= 3 * g;
-				}
-			}
-			else if (isJumping) {
-				double motYposRev = 1 - Math.max(0, motionY);
-				
-				if (isMoving) {
-					body[0] = (bSprint ? pi(1, 32) : 0);
-					body[1] = jumpSwing * pi(1, 16) * g;
-					
-					if (!isCrouching) {
-						rLeg[1] = pi(1, 64);
-						lLeg[1] = -pi(1, 64);
-					}
-					
-					rLeg[2] = pi(1, 100);
-					lLeg[2] = -pi(1, 100);
-					
-					if (bSprint) {
-						head[4] = 12 - cos(body[0]) * 12;
-						head[5] = -sin(body[0]) * 12;
-						
-						rArm[3] = -cos(body[1]) * 5.0F;
-						rArm[4] = 12 - cos(body[0]) * 10;
-						rArm[5] = sin(body[1]) * 5.0F - sin(body[0]) * 12;
-						
-						lArm[3] = cos(body[1]) * 5.0F;
-						lArm[4] = 12 - cos(body[0]) * 10;
-						lArm[5] = -sin(body[1]) * 5.0F - sin(body[0]) * 12;
-						
-						rLeg[3] = -cos(body[1]) * 2f;
-						rLeg[5] = -sin(body[1]) * 2f;
-						
-						lLeg[3] = cos(body[1]) * 2f;
-						lLeg[5] = sin(body[1]) * 2f;
-						
-						rArm[1] += body[1];
-						lArm[1] += body[1];
-						head[0] += body[0];
-						
-						
-						rArm[0] = (float) (jumpSwing * pi(1, 3) * g * (1 - motionY));
-						lArm[0] = (float) (-jumpSwing * pi(1, 3) * g * (1 - motionY));
-						rLeg[0] = MathHelper.clamp_float((float) (-jumpSwing * pi(1, 4) * g * (1 - motionY)),
-														 -pi(1, 3),
-														 pi(1, 3));
-						lLeg[0] = MathHelper.clamp_float((float) (jumpSwing * pi(1, 4) * g * (1 - motionY)),
-														 -pi(1, 3),
-														 pi(1, 3));
-						
-						rLeg[2] = (float) Math.abs(jumpSwing * pi(1, 32) * g * (1 - motionY));
-						lLeg[2] = (float) -Math.abs(jumpSwing * pi(1, 32) * g * (1 - motionY));
-					}
-					else {
-						float v = isCrouching ? 0.25f : 1;
-						float v1 = isCrouching ? 0.4f : 1;
-						rArm[0] = (float) (jumpSwing * pi(1, 3) * (1 - motionY) * v1);
-						lArm[0] = (float) (-jumpSwing * pi(1, 3) * (1 - motionY) * v1);
-						
-						float move = Math.max(Math.abs(forw), Math.abs(straf));
-						rLeg[0] = move * pi(1, 32) * (jumpSwing < 0 ? backward ? 0 : 3 : backward ? -2 : 2) * v;
-						lLeg[0] = move * pi(1, 32) * (-jumpSwing < 0 ? backward ? 0 : 3 : backward ? -2 : 2) * v;
-						
-						rLeg[4] = (float) (12 - Math.max(0, jumpSwing * 2) * 2 * motYposRev * v1);
-						rLeg[5] = (float) (-Math.max(0, jumpSwing * 2) * g * 2 * motYposRev * v);
-						lLeg[4] = (float) (12 - Math.max(0, -jumpSwing * 2) * 2 * motYposRev * v1);
-						lLeg[5] = (float) (-Math.max(0, -jumpSwing * 2) * g * 2 * motYposRev * v);
-					}
+					rLeg[4] = 4;
+					lLeg[4] = 4;
+					rLeg[5] = -6;
+					lLeg[5] = -6;
+					AnimationUtils.offsetAllRotationPoints(0, 0, 5, head, rArm, lArm, rLeg, lLeg, body);
+					rArm[0] -= pi(2, 5);
+					lArm[0] -= pi(2, 5);
+					rArm[1] -= pi(1, 8);
+					lArm[1] += pi(1, 8);
+					rLeg[0] = -pi(1, 8);
+					lLeg[0] = -pi(1, 8);
 				}
 				else {
-					rArm[1] = rArm[1] + body[1];
-					lArm[1] = lArm[1] + body[1];
-					head[1] += -body[1] / 4;
 					
-					rLeg[2] += pi(1, 64);
-					lLeg[2] -= pi(1, 64);
-					
-					float v = isCrouching ? 0.25f : 1;
-					float v1 = isCrouching ? 0.4f : 1;
-					
-					rArm[0] = (float) (jumpSwing * pi(1, 3) * (1 - motionY) * v1);
-					lArm[0] = (float) (-jumpSwing * pi(1, 3) * (1 - motionY) * v1);
-					
-					rLeg[0] = pi(1, 16) * Math.max(0, jumpSwing * 2) * v;
-					lLeg[0] = pi(1, 16) * Math.max(0, -jumpSwing * 2) * v;
-					
-					
-					rLeg[4] = (float) (12 - Math.max(0, jumpSwing * 4) * motYposRev * v1);
-					rLeg[5] = (float) (-Math.max(0, jumpSwing * 3) * motYposRev * v);
-					lLeg[4] = (float) (12 - Math.max(0, -jumpSwing * 4) * motYposRev * v1);
-					lLeg[5] = (float) (-Math.max(0, -jumpSwing * 3) * motYposRev * v);
+					rArm[0] -= 0.62831855f;
+					lArm[0] -= 0.62831855f;
+					rLeg[0] -= 1.2566371f;
+					lLeg[0] -= 1.2566371f;
+					rLeg[1] += 0.31415927f;
+					lLeg[1] -= 0.31415927f;
 				}
 			}
 			else {
-				f *= backward ? -0.5f : 1;
-				g *= backward ? 0.75f : 1;
-				
-				f = isCrouching ? backward ? -h * 0.75f : h : f;
-				g = isCrouching ? 0.4f : g;
-				
-				g *= model.aimedBow || model.heldItemRight == 3 ? 2f : 1;
-				
-				
-				if (isFloating) {
-					rArm[2] = (cos(h / 6) + 1) * pi(1, 8);
-					lArm[2] = -(cos(h / 6) + 1) * pi(1, 8);
+				if (isFlying) {
+					backward = forw < 0;
 					
-					rArm[0] = sin(h / 6 + pi) * g * pi(1, 2);
-					lArm[0] = sin(h / 6 + pi) * g * pi(1, 2);
+					mul = motionY < 0 ? (float) -(motionY * 32) : motionY > 0 ? 0 : 1;
 					
-					rArm[4] -= cos(h / 6 + pi(1, 2));
-					lArm[4] -= cos(h / 6 + pi(1, 2));
-					
-					rLeg[0] = cos(h / 3) * (g + 1) * pi(1, 5);
-					lLeg[0] = cos(h / 3 + pi) * (g + 1) * pi(1, 5);
-				}
-				else {
-					f = player.inWater ? h / 3 : f;
-					g = player.inWater ? 0.5f : g;
+					rArm[2] = pi(1, 48) * mul;
+					lArm[2] = -pi(1, 48) * mul;
+					rLeg[2] = pi(1, 128);
+					lLeg[2] = -pi(1, 128);
 					
 					if (isMoving) {
-						rArm[0] = cos(f * mul) * 2.0F * g * (bSprint ? 0.8f : 0.5F) / k;
-						lArm[0] = cos(f * mul + pi) * 2.0F * g * (bSprint ? 0.8f : 0.5F) / k;
+						g *= backward ? -1 : 1;
 						
-						body[0] = (cos(f * mul * 2) + 1) * g * (bSprint ? 0.1f : 0) / k + (bSprint ? pi(1, 32) : 0);
-						body[1] = cos(f * mul) *
-								g *
-								(bSprint ? 0.0f : backward ? 0.8f : 0.5F) *
-								(isCrouching ? 0.25f : 1) / k;
+						head[0] += -g * pi(1, 12);
+						rArm[2] += pi(1, 16);
+						lArm[2] -= pi(1, 16);
+						rArm[0] = g * pi(1, 4);
+						lArm[0] = g * pi(1, 4);
+						rLeg[0] = g * pi(1, 4);
+						lLeg[0] = g * pi(1, 4);
+						rLeg[2] += pi(1, 64);
+						lLeg[2] -= pi(1, 64);
+						
+					}
+					
+					head[0] += sin(h / 8) * pi(1, 80);
+					
+					rArm[0] += (sin(h / 18f)) * pi(1, 16);
+					lArm[0] += -(sin(h / (14f))) * pi(1, 16);
+					rLeg[0] += (cos(h / 6f)) * pi(1, 16);
+					lLeg[0] += (cos(h / 6f + pi)) * pi(1, 16);
+					
+					rArm[2] += (cos(h / 10f - pi(1, 4)) + 1) * pi(1, (int) (12 + 40 * Math.abs(motionY)));
+					lArm[2] += -(cos(h / (10f) - pi(1, 4)) + 1) * pi(1, (int) (12 + 40 * Math.abs(motionY)));
+					rLeg[2] += (cos(h / 10f - pi(1, 6)) + 1) * pi(1, 128);
+					lLeg[2] += -(cos(h / (10f) - pi(1, 6)) + 1) * pi(1, 128);
+					
+					float v = sin(h / 10) * 1.25f;
+					head[4] += v;
+					body[4] += v;
+					rArm[4] += v;
+					lArm[4] += v;
+					rLeg[4] += v;
+					lLeg[4] += v;
+					
+					if (forw > 0 || straf != 0 && !(forw < 0)) {
+						rLeg[4] -= 2 * g;
+						rLeg[5] -= 3 * g;
+					}
+				}
+				else if (isJumping) {
+					double motYposRev = 1 - Math.max(0, motionY);
+					
+					if (isMoving) {
+						body[0] = (bSprint ? pi(1, 32) : 0);
+						body[1] = jumpSwing * pi(1, 16) * g;
 						
 						if (!isCrouching) {
 							rLeg[1] = pi(1, 64);
 							lLeg[1] = -pi(1, 64);
 						}
 						
-						rLeg[0] = Math.max(-2, (cos(f * mul + pi)) * g * (bSprint ? 0.9f : 0.6f) / k);
 						rLeg[2] = pi(1, 100);
-						
-						lLeg[0] = Math.max(-2, (cos(f * mul)) * g * (bSprint ? 0.9f : 0.6f) / k);
 						lLeg[2] = -pi(1, 100);
 						
-						if (player.inWater && !isHeadInsideWater(player)) {
-							body[0] = (cos(f * mul * 2) + 1) * g * 0.25F / k;
-							body[1] = cos(f * mul) * g * 0.6F / k;
+						if (bSprint) {
+							head[4] = 12 - cos(body[0]) * 12;
+							head[5] = -sin(body[0]) * 12;
 							
-							rArm[2] += pi(1, 3);
-							lArm[2] -= pi(1, 3);
+							rArm[3] = -cos(body[1]) * 5.0F;
+							rArm[4] = 12 - cos(body[0]) * 10;
+							rArm[5] = sin(body[1]) * 5.0F - sin(body[0]) * 12;
 							
-							rArm[0] = cos(f * mul) * 2.0F * g * 1f / k;
-							lArm[0] = cos(f * mul + pi) * 2.0F * g * 1f / k;
+							lArm[3] = cos(body[1]) * 5.0F;
+							lArm[4] = 12 - cos(body[0]) * 10;
+							lArm[5] = -sin(body[1]) * 5.0F - sin(body[0]) * 12;
 							
-							rArm[4] -= 1;
-							lArm[4] -= 1;
+							rLeg[3] = -cos(body[1]) * 2f;
+							rLeg[5] = -sin(body[1]) * 2f;
+							
+							lLeg[3] = cos(body[1]) * 2f;
+							lLeg[5] = sin(body[1]) * 2f;
+							
+							rArm[1] += body[1];
+							lArm[1] += body[1];
+							head[0] += body[0];
+							
+							
+							rArm[0] = (float) (jumpSwing * pi(1, 3) * g * (1 - motionY));
+							lArm[0] = (float) (-jumpSwing * pi(1, 3) * g * (1 - motionY));
+							rLeg[0] = MathHelper.clamp_float((float) (-jumpSwing * pi(1, 4) * g * (1 - motionY)),
+															 -pi(1, 3),
+															 pi(1, 3));
+							lLeg[0] = MathHelper.clamp_float((float) (jumpSwing * pi(1, 4) * g * (1 - motionY)),
+															 -pi(1, 3),
+															 pi(1, 3));
+							
+							rLeg[2] = (float) Math.abs(jumpSwing * pi(1, 32) * g * (1 - motionY));
+							lLeg[2] = (float) -Math.abs(jumpSwing * pi(1, 32) * g * (1 - motionY));
 						}
-						
-						head[4] = 12 - cos(body[0]) * 12;
-						head[5] = -sin(body[0]) * 12;
-						rArm[3] = -cos(body[1]) * 5.0F;
-						rArm[4] = 12 - cos(body[0]) * 10;
-						rArm[5] = sin(body[1]) * 5.0F - sin(body[0]) * 12;
-						lArm[3] = cos(body[1]) * 5.0F;
-						lArm[4] = 12 - cos(body[0]) * 10;
-						lArm[5] = -sin(body[1]) * 5.0F - sin(body[0]) * 12;
-						rLeg[3] = -cos(body[1]) * 2f;
-						rLeg[4] = Math.max((sin(f * mul) - 1) * g * (bSprint ? 2.5f : 1.75f) + 12, 6);
-						rLeg[5] = -sin(body[1]) * 2f;
-						lLeg[3] = cos(body[1]) * 2f;
-						lLeg[4] = Math.max((sin(f * mul + pi) - 1) * g * (bSprint ? 2.5f : 1.75f) + 12, 6);
-						lLeg[5] = sin(body[1]) * 2f;
-						
-						rArm[1] += body[1] + (bSprint ? cos(f * mul) * pi(1, 8) : 0);
-						lArm[1] += body[1] + (bSprint ? cos(f * mul) * pi(1, 8) : 0);
-						head[0] += body[0];
-						//head[1] += -body[1] / 3;
-						
-						float v = 2f;
-						float v1 = bSprint ? 3.5f : backward ? 0.2f : 2f;
-						float v2 = Math.min(cos(f * mul * v) * g * v1, 2) *
-								(entity == Minecraft.getMinecraft().thePlayer &&
-										 Minecraft.getMinecraft().gameSettings.thirdPersonView == 0 ? 0.25f : 1);
-						
-						head[4] -= v2;
-						body[4] -= v2;
-						rArm[4] -= v2;
-						lArm[4] -= v2;
-						rLeg[4] -= v2;
-						lLeg[4] -= v2;
+						else {
+							float v = isCrouching ? 0.25f : 1;
+							float v1 = isCrouching ? 0.4f : 1;
+							rArm[0] = (float) (jumpSwing * pi(1, 3) * (1 - motionY) * v1);
+							lArm[0] = (float) (-jumpSwing * pi(1, 3) * (1 - motionY) * v1);
+							
+							float move = Math.max(Math.abs(forw), Math.abs(straf));
+							rLeg[0] = move * pi(1, 32) * (jumpSwing < 0 ? backward ? 0 : 3 : backward ? -2 : 2) * v;
+							lLeg[0] = move * pi(1, 32) * (-jumpSwing < 0 ? backward ? 0 : 3 : backward ? -2 : 2) * v;
+							
+							rLeg[4] = (float) (12 - Math.max(0, jumpSwing * 2) * 2 * motYposRev * v1);
+							rLeg[5] = (float) (-Math.max(0, jumpSwing * 2) * g * 2 * motYposRev * v);
+							lLeg[4] = (float) (12 - Math.max(0, -jumpSwing * 2) * 2 * motYposRev * v1);
+							lLeg[5] = (float) (-Math.max(0, -jumpSwing * 2) * g * 2 * motYposRev * v);
+						}
 					}
 					else {
 						rArm[1] = rArm[1] + body[1];
 						lArm[1] = lArm[1] + body[1];
-						body[1] += head[1] * (isCrouching ? 0 : 0.5f);
-						rArm[1] += body[1] * 0.75f;
-						lArm[1] += body[1] * 0.75f;
+						head[1] += -body[1] / 4;
 						
-						rArm[3] = -cos(body[1] * 0.75f) * 5.0F;
-						rArm[5] = sin(body[1] * 0.75f) * 5.0F;
-						lArm[3] = cos(body[1] * 0.75f) * 5.0F;
-						lArm[5] = -sin(body[1] * 0.75f) * 5.0F;
+						rLeg[2] += pi(1, 64);
+						lLeg[2] -= pi(1, 64);
 						
-						rLeg[0] -= pi(1, 80);
-						rLeg[2] += pi(1, 50);
-						lLeg[0] += pi(1, 128);
-						lLeg[2] -= pi(1, 50);
-						rLeg[1] += pi(1, 32);
-						lLeg[1] -= pi(1, 12);
+						float v = isCrouching ? 0.25f : 1;
+						float v1 = isCrouching ? 0.4f : 1;
 						
-						rLeg[5] -= 0.6f;
-						lLeg[5] += 0.5f;
+						rArm[0] = (float) (jumpSwing * pi(1, 3) * (1 - motionY) * v1);
+						lArm[0] = (float) (-jumpSwing * pi(1, 3) * (1 - motionY) * v1);
+						
+						rLeg[0] = pi(1, 16) * Math.max(0, jumpSwing * 2) * v;
+						lLeg[0] = pi(1, 16) * Math.max(0, -jumpSwing * 2) * v;
+						
+						
+						rLeg[4] = (float) (12 - Math.max(0, jumpSwing * 4) * motYposRev * v1);
+						rLeg[5] = (float) (-Math.max(0, jumpSwing * 3) * motYposRev * v);
+						lLeg[4] = (float) (12 - Math.max(0, -jumpSwing * 4) * motYposRev * v1);
+						lLeg[5] = (float) (-Math.max(0, -jumpSwing * 3) * motYposRev * v);
+					}
+				}
+				else {
+					f *= backward ? -0.5f : 1;
+					g *= backward ? 0.75f : 1;
+					
+					f = isCrouching ? backward ? -h * 0.75f : h : f;
+					g = isCrouching ? 0.4f : g;
+					
+					g *= model.aimedBow || model.heldItemRight == 3 ? 2f : 1;
+					
+					
+					if (isFloating) {
+						rArm[2] = (cos(h / 6) + 1) * pi(1, 8);
+						lArm[2] = -(cos(h / 6) + 1) * pi(1, 8);
+						
+						rArm[0] = sin(h / 6 + pi) * g * pi(1, 2);
+						lArm[0] = sin(h / 6 + pi) * g * pi(1, 2);
+						
+						rArm[4] -= cos(h / 6 + pi(1, 2));
+						lArm[4] -= cos(h / 6 + pi(1, 2));
+						
+						rLeg[0] = cos(h / 3) * (g + 1) * pi(1, 5);
+						lLeg[0] = cos(h / 3 + pi) * (g + 1) * pi(1, 5);
+					}
+					else {
+						f = player.inWater ? h / 3 : f;
+						g = player.inWater ? 0.5f : g;
+						
+						if (isMoving) {
+							rArm[0] = cos(f * mul) * 2.0F * g * (bSprint ? 0.8f : 0.5F) / k;
+							lArm[0] = cos(f * mul + pi) * 2.0F * g * (bSprint ? 0.8f : 0.5F) / k;
+							
+							body[0] = (cos(f * mul * 2) + 1) * g * (bSprint ? 0.1f : 0) / k + (bSprint ? pi(1, 32) : 0);
+							body[1] = cos(f * mul) *
+									g *
+									(bSprint ? 0.0f : backward ? 0.8f : 0.5F) *
+									(isCrouching ? 0.25f : 1) / k;
+							
+							if (!isCrouching) {
+								rLeg[1] = pi(1, 64);
+								lLeg[1] = -pi(1, 64);
+							}
+							
+							rLeg[0] = Math.max(-2, (cos(f * mul + pi)) * g * (bSprint ? 0.9f : 0.6f) / k);
+							rLeg[2] = pi(1, 100);
+							
+							lLeg[0] = Math.max(-2, (cos(f * mul)) * g * (bSprint ? 0.9f : 0.6f) / k);
+							lLeg[2] = -pi(1, 100);
+							
+							if (player.inWater && !isHeadInsideWater(player)) {
+								body[0] = (cos(f * mul * 2) + 1) * g * 0.25F / k;
+								body[1] = cos(f * mul) * g * 0.6F / k;
+								
+								rArm[2] += pi(1, 3);
+								lArm[2] -= pi(1, 3);
+								
+								rArm[0] = cos(f * mul) * 2.0F * g * 1f / k;
+								lArm[0] = cos(f * mul + pi) * 2.0F * g * 1f / k;
+								
+								rArm[4] -= 1;
+								lArm[4] -= 1;
+							}
+							
+							head[4] = 12 - cos(body[0]) * 12;
+							head[5] = -sin(body[0]) * 12;
+							rArm[3] = -cos(body[1]) * 5.0F;
+							rArm[4] = 12 - cos(body[0]) * 10;
+							rArm[5] = sin(body[1]) * 5.0F - sin(body[0]) * 12;
+							lArm[3] = cos(body[1]) * 5.0F;
+							lArm[4] = 12 - cos(body[0]) * 10;
+							lArm[5] = -sin(body[1]) * 5.0F - sin(body[0]) * 12;
+							rLeg[3] = -cos(body[1]) * 2f;
+							rLeg[4] = Math.max((sin(f * mul) - 1) * g * (bSprint ? 2.5f : 1.75f) + 12, 6);
+							rLeg[5] = -sin(body[1]) * 2f;
+							lLeg[3] = cos(body[1]) * 2f;
+							lLeg[4] = Math.max((sin(f * mul + pi) - 1) * g * (bSprint ? 2.5f : 1.75f) + 12, 6);
+							lLeg[5] = sin(body[1]) * 2f;
+							
+							rArm[1] += body[1] + (bSprint ? cos(f * mul) * pi(1, 8) : 0);
+							lArm[1] += body[1] + (bSprint ? cos(f * mul) * pi(1, 8) : 0);
+							head[0] += body[0];
+							//head[1] += -body[1] / 3;
+							
+							float v = 2f;
+							float v1 = bSprint ? 3.5f : backward ? 0.2f : 2f;
+							float v2 = Math.min(cos(f * mul * v) * g * v1, 2) *
+									(entity == Minecraft.getMinecraft().thePlayer &&
+											 Minecraft.getMinecraft().gameSettings.thirdPersonView == 0 ? 0.25f : 1);
+							
+							head[4] -= v2;
+							body[4] -= v2;
+							rArm[4] -= v2;
+							lArm[4] -= v2;
+							rLeg[4] -= v2;
+							lLeg[4] -= v2;
+						}
+						else {
+							rArm[1] = rArm[1] + body[1];
+							lArm[1] = lArm[1] + body[1];
+							body[1] += head[1] * (isCrouching ? 0 : 0.5f);
+							rArm[1] += body[1] * 0.75f;
+							lArm[1] += body[1] * 0.75f;
+							
+							rArm[3] = -cos(body[1] * 0.75f) * 5.0F;
+							rArm[5] = sin(body[1] * 0.75f) * 5.0F;
+							lArm[3] = cos(body[1] * 0.75f) * 5.0F;
+							lArm[5] = -sin(body[1] * 0.75f) * 5.0F;
+							
+							rLeg[0] -= pi(1, 80);
+							rLeg[2] += pi(1, 50);
+							lLeg[0] += pi(1, 128);
+							lLeg[2] -= pi(1, 50);
+							rLeg[1] += pi(1, 32);
+							lLeg[1] -= pi(1, 12);
+							
+							rLeg[5] -= 0.6f;
+							lLeg[5] += 0.5f;
+						}
 					}
 				}
 			}
 		}
 		
-		this.swingArm(model, body, rArm, lArm, head);
+		if (!player.isPlayerSleeping()) {
+			this.swingArm(model, body, rArm, lArm, head);
+		}
 		
 		if (isCrouching && !isFlying) {
 			body[0] = 0.5F;
@@ -647,16 +662,22 @@ public class AnimCommon extends BaseAnimation {
 			rArm[1] -= pi(1, 7);
 			lArm[1] += pi(1, 7);
 			
+			if (player.isEating() &&
+					player.getHeldItem() != null &&
+					player.getHeldItem().getItem() instanceof ProgressiveCraftingItem) {
+				rArm[2] += pi(1, 5);
+			}
+			
 			head[0] = MathHelper.clamp_float(pi(1, 6) + sin(h / 24) * pi(1, 12), pi(1, 16), pi(1, 5));
 			head[2] += MathHelper.clamp_float(sin(h / 12) * pi(1, 8), -pi(1, 16), pi(1, 16));
 		}
 		
-		AnimationUtils.smoothRotateAll(partHolder.getHead(), head, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getBody(), body, 0.8f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrArm(), rArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlArm(), lArm, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getrLeg(), rLeg, 0.3f * delta, 0.7f * delta);
-		AnimationUtils.smoothRotateAll(partHolder.getlLeg(), lLeg, 0.3f * delta, 0.7f * delta);
+		if (model.isSneak && isFirstPerson) {
+			rArm[4] += 2.5f;
+			lArm[4] += 2.5f;
+		}
+		
+		AnimationUtils.rotateAll(partHolder, model, head, body, rArm, lArm, rLeg, lLeg);
 	}
 	
 	@Override
@@ -679,6 +700,7 @@ public class AnimCommon extends BaseAnimation {
 	
 	@Override
 	public boolean customBodyHeadRotation(EntityLivingBase entity) {
-		return ((EntityPlayer) entity).capabilities.isFlying && !entity.isRiding();
+		return ((EntityPlayer) entity).capabilities.isFlying && !entity.isRiding() ||
+				(entity.moveForward != 0 || entity.moveStrafing != 0);
 	}
 }
